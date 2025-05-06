@@ -15,6 +15,7 @@
 #define FAN_1 9
 #define MISTER 10
 #define SENSOR_POWER 0
+#define MUX_OUTPUT A0
 #define NUM_SOIL_SENSORS 5
 
 const int muxSelectPins[3] = {3, 4, 5}; // S0, S1, S2

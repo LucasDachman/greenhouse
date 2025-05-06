@@ -1,0 +1,126 @@
+#include "SensorReader.h"
+
+// The selectMuxPin function sets the S0, S1, and S2 pins
+// accordingly, given a pin from 0-7.
+void selectMuxPin(byte pin)
+{
+  for (int i = 0; i < 3; i++)
+  {
+    if (pin & (1 << i))
+      digitalWrite(muxSelectPins[i], HIGH);
+    else
+      digitalWrite(muxSelectPins[i], LOW);
+  }
+}
+
+SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, BlynkTimer &timer)
+    : carrier(carrier),
+      logger(logger),
+      timer(timer),
+      brightnessFilter(20),
+      temperature(-1),
+      humidity(-1),
+      co2(-1),
+      brightness(-1)
+{
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    soilDrynessValues[i] = -1;
+  }
+}
+
+void SensorReader::setup()
+{
+  pinMode(SENSOR_POWER, OUTPUT);
+  for (int i = 0; i < 3; i++)
+  {
+    pinMode(muxSelectPins[i], OUTPUT);
+  }
+}
+
+void SensorReader::updateSoilDryness()
+{
+  digitalWrite(SENSOR_POWER, HIGH);
+  timer.setTimeout(1000, [this]()
+                   {
+    for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+    {
+      int muxPin = soilSensorMuxPins[i];
+      selectMuxPin(muxPin);
+      soilDrynessValues[i] = analogRead(MUX_OUTPUT);
+      // Serial.print("Soil Sensor ");
+      // Serial.print(i);
+      // Serial.print(": ");
+      // Serial.println(soilDrynessValues[i]);
+    }
+    digitalWrite(SENSOR_POWER, LOW); });
+}
+
+void SensorReader::updateTemperature()
+{
+  temperature = carrier.Env.readTemperature(FAHRENHEIT);
+}
+
+void SensorReader::updateHumidity()
+{
+  humidity = carrier.Env.readHumidity();
+}
+
+void SensorReader::updateBrightness()
+{
+  brightness = brightnessFilter.getSmoothedValueWithin(5000);
+}
+
+void SensorReader::sampleBrightness()
+{
+  if (carrier.Light.colorAvailable())
+  {
+    int r, g, b, brightness_sample;
+    carrier.Light.readColor(r, g, b, brightness_sample);
+
+    brightnessFilter.addSample(brightness);
+  }
+}
+
+void SensorReader::updateCo2()
+{
+  co2 = carrier.AirQuality.readCO2();
+}
+
+void SensorReader::updateAll()
+{
+  updateSoilDryness();
+  updateTemperature();
+  updateHumidity();
+  sampleBrightness();
+  updateCo2();
+}
+
+int SensorReader::getSoilDryness(int sensorIndex)
+{
+  if (sensorIndex < 0 || sensorIndex >= NUM_SOIL_SENSORS)
+  {
+    return -1; // Invalid index
+  }
+  return soilDrynessValues[sensorIndex];
+}
+
+int SensorReader::getTemperature()
+{
+  return temperature;
+}
+
+int SensorReader::getHumidity()
+{
+  return humidity;
+}
+
+int SensorReader::getBrightness()
+{
+  return brightness;
+}
+
+float SensorReader::getCo2()
+{
+  return co2;
+}

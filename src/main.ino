@@ -17,6 +17,7 @@
 #include "SmoothingFilter.h"
 #include "Logger.h"
 #include <time.h>
+#include "SensorReader.h"
 
 MKRIoTCarrier carrier;
 
@@ -29,13 +30,6 @@ int oneSec = 1000L;
 int oneMin = oneSec * 60;
 int fifteenMin = 15 * oneMin;
 
-int temp;
-int soil_dryness;
-int humidity;
-int brightness;
-float co2;
-int soilDrynessValues[NUM_SOIL_SENSORS];
-
 BlynkTimer timer;
 SmoothingFilter brightnessFilter(20);
 
@@ -43,6 +37,7 @@ WiFiClient wifiClient;
 BearSSLClient sslClient(wifiClient);
 AwsIotLogger awsIotLogger(sslClient);
 Logger logger(Serial, awsIotLogger);
+SensorReader sensors(carrier, logger, timer);
 
 unsigned long getTime()
 {
@@ -55,107 +50,16 @@ BLYNK_CONNECTED()
   Serial.println("Blynk Connected");
 }
 
-// The selectMuxPin function sets the S0, S1, and S2 pins
-// accordingly, given a pin from 0-7.
-void selectMuxPin(byte pin)
-{
-  for (int i = 0; i < 3; i++)
-  {
-    if (pin & (1 << i))
-      digitalWrite(muxSelectPins[i], HIGH);
-    else
-      digitalWrite(muxSelectPins[i], LOW);
-  }
-}
-
-void sampleBrightness()
-{
-  // Check that new color data with brightness is available.
-  if (carrier.Light.colorAvailable())
-  {
-    int r, g, b, brightness;
-    carrier.Light.readColor(r, g, b, brightness);
-
-    // Add the brightness sample to our filter.
-    brightnessFilter.addSample(brightness);
-  }
-}
-
-void updateTemp()
-{
-  temp = carrier.Env.readTemperature(FAHRENHEIT);
-}
-
-void updateHumidity()
-{
-  humidity = carrier.Env.readHumidity();
-}
-
-void updateSoilDryness()
-{
-  soil_dryness = analogRead(A6);
-}
-
-void updateBrightness()
-{
-  brightness = brightnessFilter.getSmoothedValueWithin(5000);
-}
-
-void updateC02()
-{
-  co2 = carrier.AirQuality.readCO2();
-}
-
-void updateAllSoilSensors()
-{
-  digitalWrite(SENSOR_POWER, HIGH);
-  timer.setTimeout(1000, []() {
-    for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-    {
-      int muxPin = soilSensorMuxPins[i];
-      selectMuxPin(muxPin);
-      soil_dryness = analogRead(A6);
-      soilDrynessValues[i] = soil_dryness;
-      Serial.print("Soil Sensor ");
-      Serial.print(i);
-      Serial.print(": ");
-      Serial.println(soil_dryness);
-    }
-    digitalWrite(SENSOR_POWER, LOW);
-  });
-}
-
-void updateReadings()
-{
-  // Serial.println("Reading sensors");
-  updateTemp();
-  updateHumidity();
-  updateSoilDryness();
-  updateBrightness();
-  updateC02();
-  updateAllSoilSensors();
-  // Serial.print("Temperature: \t");
-  // Serial.println(temp);
-  // Serial.print("Humidity: \t");
-  // Serial.println(humidity);
-  // Serial.print("Moisture: \t");
-  // Serial.println(soil_dryness);
-  // Serial.print("Brightness: \t");
-  // Serial.println(brightness);
-  // Serial.print("CO2: \t");
-  // Serial.println(co2);
-}
-
 void sendData()
 {
   Serial.println("sendData");
-  updateReadings();
+  sensors.updateAll();
   Blynk.beginGroup();
-  Blynk.virtualWrite(V_TEMP, temp);
-  Blynk.virtualWrite(V_HUMIDITY, humidity);
-  Blynk.virtualWrite(V_SOIL_M, soil_dryness);
-  Blynk.virtualWrite(V_BRIGHT, brightness);
-  Blynk.virtualWrite(V_CO2, co2);
+  Blynk.virtualWrite(V_TEMP, sensors.getTemperature());
+  Blynk.virtualWrite(V_HUMIDITY, sensors.getHumidity());
+  Blynk.virtualWrite(V_SOIL_M, sensors.getSoilDryness(0));
+  Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
+  Blynk.virtualWrite(V_CO2, sensors.getCo2());
   Blynk.endGroup();
 }
 
@@ -170,8 +74,8 @@ void checkBtns()
 
 void waterIfNeeded()
 {
-  updateSoilDryness();
-  if (digitalRead(PUMP_1) == LOW && soil_dryness > WATER_SOIL_AT)
+  sensors.updateSoilDryness();
+  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > WATER_SOIL_AT)
   {
     logger.build()
         .setSerial(true)
@@ -182,7 +86,7 @@ void waterIfNeeded()
         .log();
     digitalWrite(PUMP_1, HIGH);
   }
-  else if (digitalRead(PUMP_1) == HIGH && soil_dryness < WATER_SOIL_AT)
+  else if (digitalRead(PUMP_1) == HIGH && sensors.getSoilDryness(0) < WATER_SOIL_AT)
   {
     logger.build()
         .setSerial(true)
@@ -197,9 +101,9 @@ void waterIfNeeded()
 
 void humidifyIfNeeded()
 {
-  updateHumidity();
+  sensors.updateHumidity();
   bool mister_on = digitalRead(MISTER) == HIGH;
-  if (!mister_on && humidity < MIST_AT)
+  if (!mister_on && sensors.getHumidity() < MIST_AT)
   {
     logger.build()
         .setSerial(true)
@@ -210,7 +114,7 @@ void humidifyIfNeeded()
         .log();
     digitalWrite(MISTER, HIGH);
   }
-  else if (mister_on && humidity > MIST_AT)
+  else if (mister_on && sensors.getHumidity() > MIST_AT)
   {
     logger.build()
         .setSerial(true)
@@ -226,7 +130,8 @@ void humidifyIfNeeded()
 void fanIfNeeded()
 {
   bool fan_on = digitalRead(FAN_1) == HIGH;
-  updateTemp();
+  sensors.updateTemperature();
+  int temp = sensors.getTemperature();
   if (!fan_on && temp > TEMP_HIGH_BOUND)
   {
     logger.build()
@@ -307,11 +212,7 @@ void setup()
   pinMode(PUMP_1, OUTPUT);
   pinMode(MISTER, OUTPUT);
   pinMode(FAN_1, OUTPUT);
-  pinMode(SENSOR_POWER, OUTPUT);
-  for (int i = 0; i < 3; i++)
-  {
-    pinMode(muxSelectPins[i], OUTPUT);
-  }
+  sensors.setup();
 
   Serial.println("Starting Blynk...");
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
@@ -332,7 +233,7 @@ void setup()
 
   timer.setInterval(fifteenMin, sendData);
   timer.setInterval(100, checkBtns);
-  timer.setInterval(oneSec, sampleBrightness);
+  timer.setInterval(oneSec, []() { sensors.sampleBrightness(); });
   timer.setInterval(oneSec, waterIfNeeded);
   timer.setInterval(oneSec, fanIfNeeded);
 
