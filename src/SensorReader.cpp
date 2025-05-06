@@ -7,9 +7,9 @@ void selectMuxPin(byte pin)
   for (int i = 0; i < 3; i++)
   {
     if (pin & (1 << i))
-      digitalWrite(muxSelectPins[i], HIGH);
+      digitalWrite(MUX_SELECT_PINS[i], HIGH);
     else
-      digitalWrite(muxSelectPins[i], LOW);
+      digitalWrite(MUX_SELECT_PINS[i], LOW);
   }
 }
 
@@ -31,10 +31,11 @@ SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, BlynkTimer &t
 
 void SensorReader::setup()
 {
+  pinMode(MUX_OUTPUT, INPUT);
   pinMode(SENSOR_POWER, OUTPUT);
   for (int i = 0; i < 3; i++)
   {
-    pinMode(muxSelectPins[i], OUTPUT);
+    pinMode(MUX_SELECT_PINS[i], OUTPUT);
   }
 }
 
@@ -45,7 +46,7 @@ void SensorReader::updateSoilDryness()
                    {
     for (int i = 0; i < NUM_SOIL_SENSORS; i++)
     {
-      int muxPin = soilSensorMuxPins[i];
+      int muxPin = SOIL_SENSOR_MUX_PINS[i];
       selectMuxPin(muxPin);
       soilDrynessValues[i] = analogRead(MUX_OUTPUT);
       // Serial.print("Soil Sensor ");

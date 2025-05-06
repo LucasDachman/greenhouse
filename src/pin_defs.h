@@ -18,8 +18,8 @@
 #define MUX_OUTPUT A0
 #define NUM_SOIL_SENSORS 5
 
-const int muxSelectPins[3] = {3, 4, 5}; // S0, S1, S2
-const int soilSensorMuxPins[NUM_SOIL_SENSORS] = {0, 1, 2, 3, 4}; // Y0, Y1, Y2, Y3, Y4
+const int MUX_SELECT_PINS[3] = {3, 4, 5}; // S0, S1, S2
+const int SOIL_SENSOR_MUX_PINS[NUM_SOIL_SENSORS] = {0, 1, 2, 3, 4}; // Y0, Y1, Y2, Y3, Y4
 
 
 #endif // PIN_DEFS_H
