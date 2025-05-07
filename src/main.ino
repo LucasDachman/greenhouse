@@ -236,6 +236,7 @@ void setup()
   timer.setInterval(oneSec, []() { sensors.sampleBrightness(); });
   timer.setInterval(oneSec, waterIfNeeded);
   timer.setInterval(oneSec, fanIfNeeded);
+  timer.setInterval(oneSec, humidifyIfNeeded);
 
   logger.build()
       .setSerial(true)
