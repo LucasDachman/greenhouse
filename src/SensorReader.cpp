@@ -33,7 +33,7 @@ void SensorReader::setup()
 {
   pinMode(MUX_OUTPUT, INPUT);
   pinMode(SENSOR_POWER, OUTPUT);
-  for (int i = 0; i < 3; i++)
+  for (byte i = 0; i < 3; i++)
   {
     pinMode(MUX_SELECT_PINS[i], OUTPUT);
   }
@@ -43,9 +43,9 @@ void SensorReader::updateSoilDryness()
 {
   digitalWrite(SENSOR_POWER, HIGH);
   delay(1000); // Allow time for the sensor to stabilize
-  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    int muxPin = SOIL_SENSOR_MUX_PINS[i];
+    byte muxPin = SOIL_SENSOR_MUX_PINS[i];
     selectMuxPin(muxPin);
     soilDrynessValues[i] = analogRead(MUX_OUTPUT);
     // Serial.print("Soil Sensor ");

@@ -57,7 +57,10 @@ void sendData()
   Blynk.beginGroup();
   Blynk.virtualWrite(V_TEMP, sensors.getTemperature());
   Blynk.virtualWrite(V_HUMIDITY, sensors.getHumidity());
-  Blynk.virtualWrite(V_SOIL_M, sensors.getSoilDryness(0));
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    Blynk.virtualWrite(V_SOIL_PINS[i], sensors.getSoilDryness(i));
+  }
   Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
   Blynk.virtualWrite(V_CO2, sensors.getCo2());
   Blynk.endGroup();
