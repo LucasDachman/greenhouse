@@ -42,19 +42,18 @@ void SensorReader::setup()
 void SensorReader::updateSoilDryness()
 {
   digitalWrite(SENSOR_POWER, HIGH);
-  timer.setTimeout(1000, [this]()
-                   {
-    for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-    {
-      int muxPin = SOIL_SENSOR_MUX_PINS[i];
-      selectMuxPin(muxPin);
-      soilDrynessValues[i] = analogRead(MUX_OUTPUT);
-      // Serial.print("Soil Sensor ");
-      // Serial.print(i);
-      // Serial.print(": ");
-      // Serial.println(soilDrynessValues[i]);
-    }
-    digitalWrite(SENSOR_POWER, LOW); });
+  delay(1000); // Allow time for the sensor to stabilize
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    int muxPin = SOIL_SENSOR_MUX_PINS[i];
+    selectMuxPin(muxPin);
+    soilDrynessValues[i] = analogRead(MUX_OUTPUT);
+    // Serial.print("Soil Sensor ");
+    // Serial.print(i);
+    // Serial.print(": ");
+    // Serial.println(soilDrynessValues[i]);
+  }
+  digitalWrite(SENSOR_POWER, LOW);
 }
 
 void SensorReader::updateTemperature()

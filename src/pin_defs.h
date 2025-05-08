@@ -11,9 +11,10 @@
 #define V_LOG V4
 #define V_CO2 V5
 
-#define PUMP_1 8
 #define FAN_1 9
 #define MISTER 10
+#define PUMP_1 11
+#define PUMP_2 12
 #define SENSOR_POWER 0
 #define MUX_OUTPUT A0
 #define NUM_SOIL_SENSORS 5
