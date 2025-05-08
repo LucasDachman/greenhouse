@@ -18,6 +18,7 @@
 #include "Logger.h"
 #include <time.h>
 #include "SensorReader.h"
+#include <ArduinoJson.h>
 
 MKRIoTCarrier carrier;
 
@@ -65,28 +66,40 @@ void sendData()
   Blynk.virtualWrite(V_CO2, sensors.getCo2());
   Blynk.endGroup();
 
+  uint16_t *log_buff = new uint16_t[256];
+  JsonDocument doc;
+  doc["temp"] = sensors.getTemperature();
+  doc["humidity"] = sensors.getHumidity();
+  doc["brightness"] = sensors.getBrightness();
+  doc["co2"] = sensors.getCo2();
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    doc["soil_dryness_" + String(i)] = sensors.getSoilDryness(i);
+  }
+  serializeJson(doc, log_buff, 256);
+
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/temperature")
-      .message(sensors.getTemperature())
+      .data(sensors.getTemperature())
       .log();
 
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/humidity")
-      .message(sensors.getHumidity())
+      .data(sensors.getHumidity())
       .log();
 
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/brightness")
-      .message(sensors.getBrightness())
+      .data(sensors.getBrightness())
       .log();
 
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/co2")
-      .message(sensors.getCo2())
+      .data(sensors.getCo2())
       .log();
 
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
@@ -94,14 +107,14 @@ void sendData()
     logger.build()
         .cloud(true)
         .topic(("greenhouse/data/soil_dryness/" + String(i)).c_str())
-        .message(sensors.getSoilDryness(i))
+        .data(sensors.getSoilDryness(i))
         .log();
   }
 
   logger.build()
       .serial(true)
       .cloud(true)
-      .message("sendData Complete")
+      .data("sendData Complete")
       .log();
 }
 
@@ -124,7 +137,7 @@ void waterIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("pump_1_watering")
-        .message("Watering")
+        .data("Watering")
         .log();
     digitalWrite(PUMP_1, HIGH);
   }
@@ -135,7 +148,7 @@ void waterIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("pump_1_watering")
-        .message("Stopping watering")
+        .data("Stopping watering")
         .log();
     digitalWrite(PUMP_1, LOW);
   }
@@ -152,7 +165,7 @@ void humidifyIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("mister")
-        .message("Mister On")
+        .data("Mister On")
         .log();
     digitalWrite(MISTER, HIGH);
   }
@@ -163,7 +176,7 @@ void humidifyIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("mister")
-        .message("Mister Off")
+        .data("Mister Off")
         .log();
     digitalWrite(MISTER, LOW);
   }
@@ -181,7 +194,7 @@ void fanIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("fan")
-        .messagef("Fan On %sF", String(temp).c_str())
+        .dataf("Fan On %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, HIGH);
   }
@@ -192,7 +205,7 @@ void fanIfNeeded()
         .cloud(true)
         .notification(true)
         .notifType("fan")
-        .messagef("Fan Off %sF", String(temp).c_str())
+        .dataf("Fan Off %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, LOW);
   }
@@ -283,7 +296,7 @@ void setup()
   logger.build()
       .serial(true)
       .cloud(true)
-      .message("Setup complete")
+      .data("Setup complete")
       .log();
 }
 

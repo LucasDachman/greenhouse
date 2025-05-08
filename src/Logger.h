@@ -17,7 +17,7 @@ public:
     const char *notif_type = "Log";
     bool cloud = false;
     const char *topic = "greenhouse/logs/mkrwifi1010";
-    const char *message;
+    const char *data;
   };
 
   Logger(Stream &stream, AwsIotLogger &awsIotLogger);
@@ -49,13 +49,13 @@ public:
 
   LogParamsBuilder &notifType(const char *notif_type);
 
-  LogParamsBuilder &message(const char *message);
+  LogParamsBuilder &data(const char *data);
 
-  LogParamsBuilder &message(String &message);
+  LogParamsBuilder &data(String &data);
 
-  LogParamsBuilder &message(int message);
+  LogParamsBuilder &data(int data);
 
-  LogParamsBuilder &messagef(const char *format, ...);
+  LogParamsBuilder &dataf(const char *format, ...);
 
   Logger::LogParams build();
 

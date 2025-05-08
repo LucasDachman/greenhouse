@@ -33,9 +33,9 @@ bool AwsIotLogger::connect()
   return false;
 }
 
-bool AwsIotLogger::publishLog(const char *logMessage)
+bool AwsIotLogger::publishLog(const char *logData)
 {
-  Serial.println("Publishing log message to AWS IoT Core");
+  Serial.println("Publishing log data to AWS IoT Core");
   if (!mqttClient.connected())
   {
     Serial.println("MQTT client not connected. Reconnecting...");
@@ -47,17 +47,17 @@ bool AwsIotLogger::publishLog(const char *logMessage)
 
   // Serial.println("mqttClient connected");
   mqttClient.beginMessage(awsTopic, false, 1, false);
-  mqttClient.print(logMessage);
+  mqttClient.print(logData);
   int result = mqttClient.endMessage();
   if (result)
   {
 
-    // Serial.println("Log message published successfully");
+    // Serial.println("Log data published successfully");
     return true;
   }
   else
   {
-    Serial.print("Failed to publish log message. Code: ");
+    Serial.print("Failed to publish log data. Code: ");
     Serial.println(result);
     return false;
   }

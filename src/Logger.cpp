@@ -16,12 +16,12 @@ void Logger::log(const LogParams &params)
 {
   if (params.serial)
   {
-    stream->write(params.message);
+    stream->write(params.data);
     stream->write("\n");
   }
   if (params.notification)
   {
-    Blynk.logEvent(params.notif_type, params.message);
+    Blynk.logEvent(params.notif_type, params.data);
   }
   if (params.cloud)
   {
@@ -32,7 +32,7 @@ void Logger::log(const LogParams &params)
     strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeinfo);
 
     char *log;
-    snprintf(log, 256, "{\"time\": \"%s\", \"message\": \"%s\"}", timeString, params.message);
+    snprintf(log, 256, "{\"time\": \"%s\", \"data\": \"%s\"}", timeString, params.data);
     cloudLogger->publishLog(log);
   }
 }
@@ -78,32 +78,32 @@ LogParamsBuilder &LogParamsBuilder::notifType(const char *notif_type)
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::message(const char *message)
+LogParamsBuilder &LogParamsBuilder::data(const char *data)
 {
-  params.message = message;
+  params.data = data;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::message(String &message)
+LogParamsBuilder &LogParamsBuilder::data(String &data)
 {
-  params.message = message.c_str();
+  params.data = data.c_str();
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::message(int message)
+LogParamsBuilder &LogParamsBuilder::data(int data)
 {
-  params.message = String(message).c_str();
+  params.data = String(data).c_str();
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::messagef(const char *format, ...)
+LogParamsBuilder &LogParamsBuilder::dataf(const char *format, ...)
 {
   va_list args;
   va_start(args, format);
-  char message[256];
-  vsnprintf(message, sizeof(message), format, args);
+  char data[256];
+  vsnprintf(data, sizeof(data), format, args);
   va_end(args);
-  return this->message(message);
+  return this->data(data);
 }
 
 Logger::LogParams LogParamsBuilder::build()
