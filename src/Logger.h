@@ -2,6 +2,7 @@
 #define LOGGER_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include "arduino_secrets.h"
 #include "AwsIotLogger.h"
 
@@ -17,6 +18,7 @@ public:
     const char *notif_type = "Log";
     bool cloud = false;
     const char *topic = "greenhouse/logs/mkrwifi1010";
+    JsonVariant dataJson;
     const char *data;
   };
 
@@ -54,6 +56,8 @@ public:
   LogParamsBuilder &data(String &data);
 
   LogParamsBuilder &data(int data);
+
+  LogParamsBuilder &data(JsonVariant data);
 
   LogParamsBuilder &dataf(const char *format, ...);
 

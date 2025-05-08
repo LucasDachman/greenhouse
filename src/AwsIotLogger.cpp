@@ -1,5 +1,6 @@
 #include "AwsIotLogger.h"
 
+int freeMemory();
 
 AwsIotLogger::AwsIotLogger(BearSSLClient &sslClient) : mqttClient(sslClient)
 {
@@ -17,6 +18,8 @@ bool AwsIotLogger::connect()
   // Connect to AWS IoT Core
   while (!mqttClient.connected())
   {
+    Serial.print("Free memory: ");
+    Serial.println(freeMemory());
     Serial.println("Connecting to AWS IoT Core...");
     if (mqttClient.connect(awsIotEndpoint, awsPort))
     {
@@ -39,7 +42,10 @@ bool AwsIotLogger::publishLog(const char *logData)
   if (!mqttClient.connected())
   {
     Serial.println("MQTT client not connected. Reconnecting...");
-    if (!connect())
+    if (connect()) {
+      Serial.println("Reconnected to AWS IoT Core");
+    }
+    else
     {
       return false;
     }

@@ -10,29 +10,62 @@
 #include <cstdarg>
 #include <time.h>
 
+int freeMemory();
+
 Logger::Logger(Stream &stream, AwsIotLogger &awsIotLogger) : stream(&stream), cloudLogger(&awsIotLogger) {}
 
 void Logger::log(const LogParams &params)
 {
+  char *data = nullptr;
+  if (params.dataJson)
+  {
+    // Serialize the JSON object to a string
+    // size_t len = measureJson(params.dataJson);
+    // data = new char[len + 1];
+    data = new char[256];
+    serializeJson(params.dataJson, data, 256);
+  } else if (params.data)
+  {
+    data = new char[strlen(params.data) + 1];
+    strcpy(data, params.data);
+  }
+  else
+  {
+    data = new char[1];
+    data[0] = '\0';
+  }
+
   if (params.serial)
   {
-    stream->write(params.data);
+    stream->write(data);
     stream->write("\n");
   }
   if (params.notification)
   {
-    Blynk.logEvent(params.notif_type, params.data);
+    Blynk.logEvent(params.notif_type, data);
   }
   if (params.cloud)
   {
     // Get the current time
     time_t now = WiFi.getTime();
     struct tm *timeinfo = localtime(&now);
-    char timeString[64];
+    char timeString[20];
     strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    char *log;
-    snprintf(log, 256, "{\"time\": \"%s\", \"data\": \"%s\"}", timeString, params.data);
+    Serial.print("timeString: ");
+    Serial.println(timeString);
+
+    Serial.print("data: ");
+    Serial.println(data);
+
+    Serial.print("Free memory: ");
+    Serial.println(freeMemory());
+
+    char *log = new char[256];
+    snprintf(log, 256, "{\"t\": \"%s\", \"data\": %s}", timeString, data);
+
+    Serial.print("log: ");
+    Serial.println(log);
     cloudLogger->publishLog(log);
   }
 }
@@ -75,6 +108,12 @@ LogParamsBuilder &LogParamsBuilder::topic(const char *topic)
 LogParamsBuilder &LogParamsBuilder::notifType(const char *notif_type)
 {
   params.notif_type = notif_type;
+  return *this;
+}
+
+LogParamsBuilder &LogParamsBuilder::data(JsonVariant data)
+{
+  params.dataJson = data;
   return *this;
 }
 

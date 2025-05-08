@@ -40,6 +40,14 @@ AwsIotLogger awsIotLogger(sslClient);
 Logger logger(Serial, awsIotLogger);
 SensorReader sensors(carrier, logger, timer);
 
+extern "C" char *sbrk(int incr);
+
+int freeMemory()
+{
+  char stack_dummy = 0;
+  return &stack_dummy - sbrk(0);
+}
+
 unsigned long getTime()
 {
   return WiFi.getTime();
@@ -54,34 +62,52 @@ BLYNK_CONNECTED()
 void sendData()
 {
   Serial.println("sendData");
+  Serial.print("Free memory: ");
+  Serial.println(freeMemory());
   sensors.updateAll();
-  Blynk.beginGroup();
-  Blynk.virtualWrite(V_TEMP, sensors.getTemperature());
-  Blynk.virtualWrite(V_HUMIDITY, sensors.getHumidity());
-  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-  {
-    Blynk.virtualWrite(V_SOIL_PINS[i], sensors.getSoilDryness(i));
-  }
-  Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
-  Blynk.virtualWrite(V_CO2, sensors.getCo2());
-  Blynk.endGroup();
+  // Blynk.beginGroup();
+  // Blynk.virtualWrite(V_TEMP, sensors.getTemperature());
+  // Blynk.virtualWrite(V_HUMIDITY, sensors.getHumidity());
+  // for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  // {
+  //   Blynk.virtualWrite(V_SOIL_PINS[i], sensors.getSoilDryness(i));
+  // }
+  // Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
+  // Blynk.virtualWrite(V_CO2, sensors.getCo2());
+  // Blynk.endGroup();
 
+  Serial.print("Free memory: ");
+  Serial.println(freeMemory());
   JsonDocument doc;
+  Serial.println("creating doc");
   doc["temp"] = sensors.getTemperature();
-  doc["humidity"] = sensors.getHumidity();
-  doc["brightness"] = sensors.getBrightness();
+  Serial.println("temp added");
+  doc["hum"] = sensors.getHumidity();
+  doc["brit"] = sensors.getBrightness();
   doc["co2"] = sensors.getCo2();
+  Serial.println("co2 added");
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    doc["soil_dryness_" + String(i)] = sensors.getSoilDryness(i);
+    Serial.println("soil dryness loop");
+
+    Serial.print("Free memory: ");
+    Serial.println(freeMemory());
+
+    String key = "soil" + String(i);
+    doc[key] = sensors.getSoilDryness(i);
   }
-  char *log_buff = new char[256];
-  serializeJson(doc, log_buff, 256);
+  doc.shrinkToFit();
+  Serial.println("doc created");
+  // char *log_buff = new char[93]; // Calculate the size needed for the JSON string
+  // Serial.println("serializing doc");
+  // serializeJson(doc, log_buff, sizeof(log_buff));
+
+  // Serial.println(log_buff);
 
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/env")
-      .data(log_buff)
+      .data(doc)
       .log();
 }
 
@@ -231,9 +257,9 @@ void setup()
   carrier.display.enableDisplay(false);
 
   Serial.println("Setting Pin modes...");
-  pinMode(PUMP_1, OUTPUT);
-  pinMode(MISTER, OUTPUT);
-  pinMode(FAN_1, OUTPUT);
+  // pinMode(PUMP_1, OUTPUT);
+  // pinMode(MISTER, OUTPUT);
+  // pinMode(FAN_1, OUTPUT);
   sensors.setup();
 
   Serial.println("Starting Blynk...");
@@ -255,7 +281,8 @@ void setup()
 
   timer.setInterval(fifteenMin, sendData);
   timer.setInterval(100, checkBtns);
-  timer.setInterval(oneSec, []() { sensors.sampleBrightness(); });
+  timer.setInterval(oneSec, []()
+                    { sensors.sampleBrightness(); });
   timer.setInterval(oneSec, waterIfNeeded);
   timer.setInterval(oneSec, fanIfNeeded);
   timer.setInterval(oneSec, humidifyIfNeeded);
@@ -265,6 +292,7 @@ void setup()
       .cloud(true)
       .data("Setup complete")
       .log();
+  sendData();
 }
 
 void loop()
