@@ -17,11 +17,11 @@ SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, Timer<> &time
     : carrier(carrier),
       logger(logger),
       timer(timer),
-      brightnessFilter(20),
       temperature(-1),
       humidity(-1),
+      brightness(-1),
       co2(-1),
-      brightness(-1)
+      brightnessFilter(20)
 {
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
@@ -41,7 +41,8 @@ void SensorReader::setup()
 
 void SensorReader::updateSoilDryness()
 {
-  digitalWrite(SENSOR_POWER, HIGH);
+  // SENSOR_POWER is connected to a high-side switch
+  digitalWrite(SENSOR_POWER, LOW);
   delay(500); // Allow time for the sensor to stabilize
   for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
@@ -54,7 +55,7 @@ void SensorReader::updateSoilDryness()
     // Serial.print(": ");
     // Serial.println(soilDrynessValues[i]);
   }
-  digitalWrite(SENSOR_POWER, LOW);
+  digitalWrite(SENSOR_POWER, HIGH);
 }
 
 void SensorReader::updateTemperature()

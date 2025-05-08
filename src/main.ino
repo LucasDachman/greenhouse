@@ -61,7 +61,7 @@ bool sendData(void *)
   doc["co2"] = sensors.getCo2();
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    String key = "soil" + String(i);
+    String key = "soil" + String(i + 1);
     doc[key] = sensors.getSoilDryness(i);
   }
   doc.shrinkToFit();
@@ -229,9 +229,10 @@ void setup()
   carrier.display.enableDisplay(false);
 
   Serial.println("Setting Pin modes...");
-  // pinMode(PUMP_1, OUTPUT);
-  // pinMode(MISTER, OUTPUT);
-  // pinMode(FAN_1, OUTPUT);
+  pinMode(PUMP_1, OUTPUT);
+  pinMode(PUMP_2, OUTPUT);
+  pinMode(MISTER, OUTPUT);
+  pinMode(FAN_1, OUTPUT);
   sensors.setup();
 
   Serial.println("Connecting to WiFi...");
