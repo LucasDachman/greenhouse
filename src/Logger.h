@@ -14,9 +14,10 @@ public:
   {
     bool serial = false;
     bool notification = false;
-    bool cloud_log = false;
-    String notif_type = "Log";
-    String message;
+    char *notif_type = "Log";
+    bool cloud = false;
+    char *topic = "greenhouse/logs/mkrwifi1010";
+    char *message;
   };
 
   Logger(Stream &stream, AwsIotLogger &awsIotLogger);
@@ -38,17 +39,17 @@ private:
 public:
   LogParamsBuilder(Logger *logger);
 
-  LogParamsBuilder &setSerial(bool serial);
+  LogParamsBuilder &serial(bool serial);
 
-  LogParamsBuilder &setNotification(bool notification);
+  LogParamsBuilder &notification(bool notification);
 
-  LogParamsBuilder &setCloudLog(bool cloud_log);
+  LogParamsBuilder &cloud(bool cloud_log);
 
-  LogParamsBuilder &setNotifType(const String &notif_type);
+  LogParamsBuilder &notifType(char *notif_type);
 
-  LogParamsBuilder &setMessage(const String &message);
+  LogParamsBuilder &message(char *message);
 
-  LogParamsBuilder &setMessagef(const char *format, ...);
+  LogParamsBuilder &messagef(const char *format, ...);
 
   Logger::LogParams build();
 

@@ -15,16 +15,16 @@ void Logger::log(const LogParams &params)
 {
   if (params.serial)
   {
-    stream->write(params.message.c_str());
+    stream->write(params.message);
     stream->write("\n");
   }
   if (params.notification)
   {
     Blynk.logEvent(params.notif_type, params.message);
   }
-  if (params.cloud_log)
+  if (params.cloud)
   {
-    cloudLogger->publishLog(params.message.c_str());
+    cloudLogger->publishLog(params.message);
   }
 }
 
@@ -39,44 +39,44 @@ LogParamsBuilder::LogParamsBuilder(Logger *logger) : logger(logger)
 {
 }
 
-LogParamsBuilder &LogParamsBuilder::setSerial(bool serial)
+LogParamsBuilder &LogParamsBuilder::serial(bool serial)
 {
   params.serial = serial;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::setNotification(bool notification)
+LogParamsBuilder &LogParamsBuilder::notification(bool notification)
 {
   params.notification = notification;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::setCloudLog(bool cloud_log)
+LogParamsBuilder &LogParamsBuilder::cloud(bool cloud_log)
 {
-  params.cloud_log = cloud_log;
+  params.cloud = cloud_log;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::setNotifType(const String &notif_type)
+LogParamsBuilder &LogParamsBuilder::notifType(char *notif_type)
 {
   params.notif_type = notif_type;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::setMessage(const String &message)
+LogParamsBuilder &LogParamsBuilder::message(char *message)
 {
   params.message = message;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::setMessagef(const char *format, ...)
+LogParamsBuilder &LogParamsBuilder::messagef(const char *format, ...)
 {
   va_list args;
   va_start(args, format);
   char message[256];
   vsnprintf(message, sizeof(message), format, args);
   va_end(args);
-  return setMessage(message);
+  return this->message(message);
 }
 
 Logger::LogParams LogParamsBuilder::build()

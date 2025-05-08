@@ -81,22 +81,22 @@ void waterIfNeeded()
   if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > WATER_SOIL_AT)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("pump_1_watering")
-        .setMessage("Watering")
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("pump_1_watering")
+        .message("Watering")
         .log();
     digitalWrite(PUMP_1, HIGH);
   }
   else if (digitalRead(PUMP_1) == HIGH && sensors.getSoilDryness(0) < WATER_SOIL_AT)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("pump_1_watering")
-        .setMessage("Stopping watering")
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("pump_1_watering")
+        .message("Stopping watering")
         .log();
     digitalWrite(PUMP_1, LOW);
   }
@@ -109,22 +109,22 @@ void humidifyIfNeeded()
   if (!mister_on && sensors.getHumidity() < MIST_AT)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("mister")
-        .setMessage("Mister On")
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("mister")
+        .message("Mister On")
         .log();
     digitalWrite(MISTER, HIGH);
   }
   else if (mister_on && sensors.getHumidity() > MIST_AT)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("mister")
-        .setMessage("Mister Off")
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("mister")
+        .message("Mister Off")
         .log();
     digitalWrite(MISTER, LOW);
   }
@@ -138,22 +138,22 @@ void fanIfNeeded()
   if (!fan_on && temp > TEMP_HIGH_BOUND)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("fan")
-        .setMessagef("Fan On %sF", String(temp).c_str())
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("fan")
+        .messagef("Fan On %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, HIGH);
   }
   else if (fan_on && temp < TEMP_LOW_BOUND)
   {
     logger.build()
-        .setSerial(true)
-        .setCloudLog(true)
-        .setNotification(true)
-        .setNotifType("fan")
-        .setMessagef("Fan Off %sF", String(temp).c_str())
+        .serial(true)
+        .cloud(true)
+        .notification(true)
+        .notifType("fan")
+        .messagef("Fan Off %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, LOW);
   }
@@ -242,9 +242,9 @@ void setup()
   timer.setInterval(oneSec, humidifyIfNeeded);
 
   logger.build()
-      .setSerial(true)
-      .setCloudLog(true)
-      .setMessage("Setup complete")
+      .serial(true)
+      .cloud(true)
+      .message("Setup complete")
       .log();
 }
 
