@@ -66,7 +66,6 @@ void sendData()
   Blynk.virtualWrite(V_CO2, sensors.getCo2());
   Blynk.endGroup();
 
-  uint16_t *log_buff = new uint16_t[256];
   JsonDocument doc;
   doc["temp"] = sensors.getTemperature();
   doc["humidity"] = sensors.getHumidity();
@@ -76,45 +75,13 @@ void sendData()
   {
     doc["soil_dryness_" + String(i)] = sensors.getSoilDryness(i);
   }
+  char *log_buff = new char[256];
   serializeJson(doc, log_buff, 256);
 
   logger.build()
       .cloud(true)
-      .topic("greenhouse/data/temperature")
-      .data(sensors.getTemperature())
-      .log();
-
-  logger.build()
-      .cloud(true)
-      .topic("greenhouse/data/humidity")
-      .data(sensors.getHumidity())
-      .log();
-
-  logger.build()
-      .cloud(true)
-      .topic("greenhouse/data/brightness")
-      .data(sensors.getBrightness())
-      .log();
-
-  logger.build()
-      .cloud(true)
-      .topic("greenhouse/data/co2")
-      .data(sensors.getCo2())
-      .log();
-
-  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-  {
-    logger.build()
-        .cloud(true)
-        .topic(("greenhouse/data/soil_dryness/" + String(i)).c_str())
-        .data(sensors.getSoilDryness(i))
-        .log();
-  }
-
-  logger.build()
-      .serial(true)
-      .cloud(true)
-      .data("sendData Complete")
+      .topic("greenhouse/data/env")
+      .data(log_buff)
       .log();
 }
 
