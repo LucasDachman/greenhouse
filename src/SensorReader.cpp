@@ -42,11 +42,12 @@ void SensorReader::setup()
 void SensorReader::updateSoilDryness()
 {
   digitalWrite(SENSOR_POWER, HIGH);
-  delay(1000); // Allow time for the sensor to stabilize
+  delay(500); // Allow time for the sensor to stabilize
   for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
     byte muxPin = SOIL_SENSOR_MUX_PINS[i];
     selectMuxPin(muxPin);
+    delay(500); // Allow time for the sensor to stabilize
     soilDrynessValues[i] = analogRead(MUX_OUTPUT);
     // Serial.print("Soil Sensor ");
     // Serial.print(i);
