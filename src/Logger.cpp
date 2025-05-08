@@ -8,6 +8,7 @@
 #define NO_GLOBAL_BLYNK true
 #include <BlynkSimpleWiFiNINA.h>
 #include <cstdarg>
+#include <time.h>
 
 Logger::Logger(Stream &stream, AwsIotLogger &awsIotLogger) : stream(&stream), cloudLogger(&awsIotLogger) {}
 
@@ -24,7 +25,15 @@ void Logger::log(const LogParams &params)
   }
   if (params.cloud)
   {
-    cloudLogger->publishLog(params.message);
+    // Get the current time
+    time_t now = WiFi.getTime();
+    struct tm *timeinfo = localtime(&now);
+    char timeString[64];
+    strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeinfo);
+
+    char *log;
+    snprintf(log, 256, "{\"time\": \"%s\", \"message\": \"%s\"}", timeString, params.message);
+    cloudLogger->publishLog(log);
   }
 }
 
@@ -57,15 +66,33 @@ LogParamsBuilder &LogParamsBuilder::cloud(bool cloud_log)
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::notifType(char *notif_type)
+LogParamsBuilder &LogParamsBuilder::topic(const char *topic)
+{
+  params.topic = topic;
+  return *this;
+}
+
+LogParamsBuilder &LogParamsBuilder::notifType(const char *notif_type)
 {
   params.notif_type = notif_type;
   return *this;
 }
 
-LogParamsBuilder &LogParamsBuilder::message(char *message)
+LogParamsBuilder &LogParamsBuilder::message(const char *message)
 {
   params.message = message;
+  return *this;
+}
+
+LogParamsBuilder &LogParamsBuilder::message(String &message)
+{
+  params.message = message.c_str();
+  return *this;
+}
+
+LogParamsBuilder &LogParamsBuilder::message(int message)
+{
+  params.message = String(message).c_str();
   return *this;
 }
 

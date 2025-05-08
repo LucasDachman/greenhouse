@@ -64,6 +64,45 @@ void sendData()
   Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
   Blynk.virtualWrite(V_CO2, sensors.getCo2());
   Blynk.endGroup();
+
+  logger.build()
+      .cloud(true)
+      .topic("greenhouse/data/temperature")
+      .message(sensors.getTemperature())
+      .log();
+
+  logger.build()
+      .cloud(true)
+      .topic("greenhouse/data/humidity")
+      .message(sensors.getHumidity())
+      .log();
+
+  logger.build()
+      .cloud(true)
+      .topic("greenhouse/data/brightness")
+      .message(sensors.getBrightness())
+      .log();
+
+  logger.build()
+      .cloud(true)
+      .topic("greenhouse/data/co2")
+      .message(sensors.getCo2())
+      .log();
+
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    logger.build()
+        .cloud(true)
+        .topic(("greenhouse/data/soil_dryness/" + String(i)).c_str())
+        .message(sensors.getSoilDryness(i))
+        .log();
+  }
+
+  logger.build()
+      .serial(true)
+      .cloud(true)
+      .message("sendData Complete")
+      .log();
 }
 
 void checkBtns()
