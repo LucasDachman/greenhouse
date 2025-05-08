@@ -1,8 +1,5 @@
 #include "arduino_secrets.h"
 
-/* Comment this out to disable prints and save space */
-#define BLYNK_PRINT Serial
-
 #define WATER_SOIL_AT 710
 #define MIST_AT 40
 
@@ -12,18 +9,17 @@
 #include "pin_defs.h"
 #include <SPI.h>
 #include <WiFiNINA.h>
-#include <BlynkSimpleWiFiNINA.h>
 #include "Arduino_MKRIoTCarrier.h"
 #include "SmoothingFilter.h"
 #include "Logger.h"
 #include <time.h>
 #include "SensorReader.h"
 #include <ArduinoJson.h>
+#include <arduino-timer.h>
 
 MKRIoTCarrier carrier;
 
-// Your WiFi credentials.
-// Set password to "" for open networks.
+// WiFi credentials.
 char ssid[] = WIFI_SSID;
 char pass[] = WIFI_PASS;
 
@@ -31,7 +27,7 @@ int oneSec = 1000L;
 int oneMin = oneSec * 60;
 int fifteenMin = 15 * oneMin;
 
-BlynkTimer timer;
+auto timer = timer_create_default(); // create a timer with default settings
 SmoothingFilter brightnessFilter(20);
 
 WiFiClient wifiClient;
@@ -53,74 +49,47 @@ unsigned long getTime()
   return WiFi.getTime();
 }
 
-// This function is called every time the device is connected to the Blynk.Cloud
-BLYNK_CONNECTED()
-{
-  Serial.println("Blynk Connected");
-}
-
-void sendData()
+bool sendData(void *)
 {
   Serial.println("sendData");
-  Serial.print("Free memory: ");
-  Serial.println(freeMemory());
   sensors.updateAll();
-  // Blynk.beginGroup();
-  // Blynk.virtualWrite(V_TEMP, sensors.getTemperature());
-  // Blynk.virtualWrite(V_HUMIDITY, sensors.getHumidity());
-  // for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-  // {
-  //   Blynk.virtualWrite(V_SOIL_PINS[i], sensors.getSoilDryness(i));
-  // }
-  // Blynk.virtualWrite(V_BRIGHT, sensors.getBrightness());
-  // Blynk.virtualWrite(V_CO2, sensors.getCo2());
-  // Blynk.endGroup();
 
-  Serial.print("Free memory: ");
-  Serial.println(freeMemory());
   JsonDocument doc;
-  Serial.println("creating doc");
   doc["temp"] = sensors.getTemperature();
-  Serial.println("temp added");
   doc["hum"] = sensors.getHumidity();
   doc["brit"] = sensors.getBrightness();
   doc["co2"] = sensors.getCo2();
-  Serial.println("co2 added");
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    Serial.println("soil dryness loop");
-
-    Serial.print("Free memory: ");
-    Serial.println(freeMemory());
-
     String key = "soil" + String(i);
     doc[key] = sensors.getSoilDryness(i);
   }
   doc.shrinkToFit();
-  Serial.println("doc created");
-  // char *log_buff = new char[93]; // Calculate the size needed for the JSON string
-  // Serial.println("serializing doc");
-  // serializeJson(doc, log_buff, sizeof(log_buff));
-
-  // Serial.println(log_buff);
 
   logger.build()
       .cloud(true)
       .topic("greenhouse/data/env")
       .data(doc)
       .log();
+  return true;
 }
 
-void checkBtns()
+void sendData()
+{
+  sendData(nullptr);
+}
+
+bool checkBtns(void *)
 {
   carrier.Buttons.update();
   if (carrier.Buttons.onTouchDown(TOUCH0))
   {
     sendData();
   }
+  return true;
 }
 
-void waterIfNeeded()
+bool waterIfNeeded(void *)
 {
   sensors.updateSoilDryness();
   if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > WATER_SOIL_AT)
@@ -145,9 +114,10 @@ void waterIfNeeded()
         .log();
     digitalWrite(PUMP_1, LOW);
   }
+  return true;
 }
 
-void humidifyIfNeeded()
+bool humidifyIfNeeded(void *)
 {
   sensors.updateHumidity();
   bool mister_on = digitalRead(MISTER) == HIGH;
@@ -173,9 +143,10 @@ void humidifyIfNeeded()
         .log();
     digitalWrite(MISTER, LOW);
   }
+  return true;
 }
 
-void fanIfNeeded()
+bool fanIfNeeded(void *)
 {
   bool fan_on = digitalRead(FAN_1) == HIGH;
   sensors.updateTemperature();
@@ -202,6 +173,7 @@ void fanIfNeeded()
         .log();
     digitalWrite(FAN_1, LOW);
   }
+  return true;
 }
 
 void setupTime()
@@ -262,30 +234,25 @@ void setup()
   // pinMode(FAN_1, OUTPUT);
   sensors.setup();
 
-  Serial.println("Starting Blynk...");
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-  // // You can also specify server:
-  // // Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, "blynk.cloud", 80);
-  // // Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, IPAddress(192,168,1,100), 8080);
-  // Serial.println("Connecting to WiFi...");
-  // WiFi.begin(ssid, pass);
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
-  //   Serial.print(".");
-  //   delay(1000);
-  // }
-  // Serial.println("Connected.");
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(1000);
+  }
+  Serial.println("Connected.");
 
   setupTime();
   ArduinoBearSSL.onGetTime(getTime);
 
-  timer.setInterval(fifteenMin, sendData);
-  timer.setInterval(100, checkBtns);
-  timer.setInterval(oneSec, []()
-                    { sensors.sampleBrightness(); });
-  timer.setInterval(oneSec, waterIfNeeded);
-  timer.setInterval(oneSec, fanIfNeeded);
-  timer.setInterval(oneSec, humidifyIfNeeded);
+  timer.every(fifteenMin, sendData);
+  timer.every(100, checkBtns);
+  timer.every(oneSec, [](void *) -> bool
+              { sensors.sampleBrightness(); return true; });
+  timer.every(oneSec, waterIfNeeded);
+  timer.every(oneSec, fanIfNeeded);
+  timer.every(oneSec, humidifyIfNeeded);
 
   logger.build()
       .serial(true)
@@ -297,10 +264,6 @@ void setup()
 
 void loop()
 {
-  Blynk.run();
-  timer.run();
+  timer.tick();
   awsIotLogger.loop();
-  // You can inject your own code or combine it with other sketches.
-  // Check other examples on how to communicate with Blynk. Remember
-  // to avoid delay() function!
 }

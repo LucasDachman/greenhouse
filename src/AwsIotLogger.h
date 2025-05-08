@@ -14,12 +14,12 @@ private:
 
   const char *awsEndpoint = awsIotEndpoint;
   int awsPort = 8883;
-  const char *awsTopic = "greenhouse/logs/mkrwifi1010";
+  static constexpr const char *awsTopic = "greenhouse/logs/mkrwifi1010";
 
 public:
   AwsIotLogger(BearSSLClient &sslClient);
   bool connect();
-  bool publishLog(const char *logMessage);
+  bool publishLog(const char *logMessage, const char* topic);
   void loop();
 };
 

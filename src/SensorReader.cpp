@@ -13,7 +13,7 @@ void selectMuxPin(byte pin)
   }
 }
 
-SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, BlynkTimer &timer)
+SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, Timer<> &timer)
     : carrier(carrier),
       logger(logger),
       timer(timer),

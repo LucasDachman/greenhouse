@@ -7,12 +7,12 @@
 #include "Logger.h"
 #include "pin_defs.h"
 #include "SmoothingFilter.h"
-#include <Adapters/BlynkWiFiCommon.h>
+#include <arduino-timer.h>
 
 class SensorReader
 {
   public:
-    SensorReader(MKRIoTCarrier &carrier, Logger &logger, BlynkTimer &timer);
+    SensorReader(MKRIoTCarrier &carrier, Logger &logger, Timer<> &timer);
 
     void setup();
 
@@ -38,7 +38,7 @@ class SensorReader
     int humidity;
     int brightness;
     float co2;
-    BlynkTimer timer;
+    Timer<> timer;
     SmoothingFilter brightnessFilter;
 };
 

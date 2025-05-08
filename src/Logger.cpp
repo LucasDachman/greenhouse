@@ -5,8 +5,6 @@
 #include <HardwareSerial.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
-#define NO_GLOBAL_BLYNK true
-#include <BlynkSimpleWiFiNINA.h>
 #include <cstdarg>
 #include <time.h>
 
@@ -20,14 +18,13 @@ void Logger::log(const LogParams &params)
   if (params.dataJson)
   {
     // Serialize the JSON object to a string
-    // size_t len = measureJson(params.dataJson);
-    // data = new char[len + 1];
-    data = new char[256];
-    serializeJson(params.dataJson, data, 256);
+    size_t len = measureJson(params.dataJson);
+    data = new char[len + 1];
+    serializeJson(params.dataJson, data, len + 1);
   } else if (params.data)
   {
-    data = new char[strlen(params.data) + 1];
-    strcpy(data, params.data);
+    data = new char[strlen(params.data) + 3];
+    snprintf(data, strlen(params.data) + 3, "\"%s\"", params.data);
   }
   else
   {
@@ -40,10 +37,10 @@ void Logger::log(const LogParams &params)
     stream->write(data);
     stream->write("\n");
   }
-  if (params.notification)
-  {
-    Blynk.logEvent(params.notif_type, data);
-  }
+  // if (params.notification)
+  // {
+    // TODO: Cloud Notifications
+  // }
   if (params.cloud)
   {
     // Get the current time
@@ -52,22 +49,25 @@ void Logger::log(const LogParams &params)
     char timeString[20];
     strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    Serial.print("timeString: ");
-    Serial.println(timeString);
+    // Serial.print("timeString: ");
+    // Serial.println(timeString);
 
-    Serial.print("data: ");
-    Serial.println(data);
+    // Serial.print("data: ");
+    // Serial.println(data);
 
-    Serial.print("Free memory: ");
-    Serial.println(freeMemory());
+    // Serial.print("Free memory: ");
+    // Serial.println(freeMemory());
 
     char *log = new char[256];
     snprintf(log, 256, "{\"t\": \"%s\", \"data\": %s}", timeString, data);
 
-    Serial.print("log: ");
-    Serial.println(log);
-    cloudLogger->publishLog(log);
+    // Serial.print("log: ");
+    // Serial.println(log);
+    cloudLogger->publishLog(log, params.topic);
+
+    delete[] log;
   }
+  delete[] data;
 }
 
 LogParamsBuilder Logger::build()
