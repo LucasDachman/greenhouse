@@ -37,11 +37,7 @@ void Logger::log(const LogParams &params)
     stream->write(data);
     stream->write("\n");
   }
-  if (params.notification)
-  {
-    mqttClient->publish(data, "greenhouse/notifications");
-  }
-  if (params.cloud)
+  if (params.cloud || params.notification)
   {
     // Get the current time
     time_t now = WiFi.getTime();
@@ -58,14 +54,23 @@ void Logger::log(const LogParams &params)
     // Serial.print("Free memory: ");
     // Serial.println(freeMemory());
 
-    char *log = new char[256];
-    snprintf(log, 256, "{\"t\": \"%s\", \"data\": %s}", timeString, data);
+    JsonDocument doc;
+    doc["t"] = timeString;
+    doc["data"] = data;
+    if (params.notification)
+    {
+      doc["ntfn"] = true;
+    }
+    doc.shrinkToFit();
+    size_t len = measureJson(doc);
+    char *json = new char[len + 1];
+    serializeJson(doc, json, len + 1);
 
     // Serial.print("log: ");
     // Serial.println(log);
-    mqttClient->publish(log, params.topic);
+    mqttClient->publish(json, params.topic);
 
-    delete[] log;
+    delete[] json;
   }
   delete[] data;
 }

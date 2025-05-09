@@ -98,7 +98,6 @@ bool waterIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("pump_1_watering")
         .data("Watering")
         .log();
     digitalWrite(PUMP_1, HIGH);
@@ -109,7 +108,6 @@ bool waterIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("pump_1_watering")
         .data("Stopping watering")
         .log();
     digitalWrite(PUMP_1, LOW);
@@ -127,7 +125,6 @@ bool humidifyIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("mister")
         .data("Mister On")
         .log();
     digitalWrite(MISTER, HIGH);
@@ -138,7 +135,6 @@ bool humidifyIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("mister")
         .data("Mister Off")
         .log();
     digitalWrite(MISTER, LOW);
@@ -157,7 +153,6 @@ bool fanIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("fan")
         .dataf("Fan On %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, HIGH);
@@ -168,7 +163,6 @@ bool fanIfNeeded(void *)
         .serial(true)
         .cloud(true)
         .notification(true)
-        .notifType("fan")
         .dataf("Fan Off %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, LOW);
