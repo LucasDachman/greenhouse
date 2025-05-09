@@ -7,7 +7,7 @@
 #include <ArduinoECCX08.h>
 #include <ArduinoMqttClient.h>
 
-class AwsIotLogger
+class AwsIotMqttClient
 {
 private:
   MqttClient mqttClient;
@@ -17,9 +17,9 @@ private:
   static constexpr const char *awsTopic = "greenhouse/logs/mkrwifi1010";
 
 public:
-  AwsIotLogger(BearSSLClient &sslClient);
+  AwsIotMqttClient(BearSSLClient &sslClient);
   bool connect();
-  bool publishLog(const char *logMessage, const char* topic);
+  bool publish(const char *data, const char* topic);
   void loop();
 };
 

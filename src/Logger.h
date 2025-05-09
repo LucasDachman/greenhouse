@@ -22,14 +22,14 @@ public:
     const char *data;
   };
 
-  Logger(Stream &stream, AwsIotLogger &awsIotLogger);
+  Logger(Stream &stream, AwsIotMqttClient &awsIotMqttClient);
 
   void log(const LogParams &params);
 
   LogParamsBuilder build();
 
   Stream *stream;
-  AwsIotLogger *cloudLogger = nullptr;
+  AwsIotMqttClient *mqttClient = nullptr;
 };
 
 class LogParamsBuilder

@@ -10,7 +10,7 @@
 
 int freeMemory();
 
-Logger::Logger(Stream &stream, AwsIotLogger &awsIotLogger) : stream(&stream), cloudLogger(&awsIotLogger) {}
+Logger::Logger(Stream &stream, AwsIotMqttClient &awsIotMqttClient) : stream(&stream), mqttClient(&awsIotMqttClient) {}
 
 void Logger::log(const LogParams &params)
 {
@@ -40,7 +40,7 @@ void Logger::log(const LogParams &params)
   if (params.notification)
   {
     // TODO: Cloud Notifications
-    cloudLogger->publishLog(data, "greenhouse/notifications");
+    mqttClient->publish(data, "greenhouse/notifications");
   }
   if (params.cloud)
   {
@@ -64,7 +64,7 @@ void Logger::log(const LogParams &params)
 
     // Serial.print("log: ");
     // Serial.println(log);
-    cloudLogger->publishLog(log, params.topic);
+    mqttClient->publish(log, params.topic);
 
     delete[] log;
   }

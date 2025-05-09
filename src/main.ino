@@ -32,8 +32,8 @@ SmoothingFilter brightnessFilter(20);
 
 WiFiClient wifiClient;
 BearSSLClient sslClient(wifiClient);
-AwsIotLogger awsIotLogger(sslClient);
-Logger logger(Serial, awsIotLogger);
+AwsIotMqttClient awsIotMqttClient(sslClient);
+Logger logger(Serial, awsIotMqttClient);
 SensorReader sensors(carrier, logger, timer);
 
 extern "C" char *sbrk(int incr);
@@ -266,5 +266,5 @@ void setup()
 void loop()
 {
   timer.tick();
-  awsIotLogger.loop();
+  awsIotMqttClient.loop();
 }

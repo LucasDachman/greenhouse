@@ -2,11 +2,11 @@
 
 int freeMemory();
 
-AwsIotLogger::AwsIotLogger(BearSSLClient &sslClient) : mqttClient(sslClient)
+AwsIotMqttClient::AwsIotMqttClient(BearSSLClient &sslClient) : mqttClient(sslClient)
 {
 }
 
-bool AwsIotLogger::connect()
+bool AwsIotMqttClient::connect()
 {
   if (!ECCX08.begin())
   {
@@ -36,7 +36,7 @@ bool AwsIotLogger::connect()
   return false;
 }
 
-bool AwsIotLogger::publishLog(const char *logData, const char *topic = awsTopic)
+bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
 {
   Serial.println("Publishing log data to AWS IoT Core");
   if (!mqttClient.connected())
@@ -53,7 +53,7 @@ bool AwsIotLogger::publishLog(const char *logData, const char *topic = awsTopic)
 
   // Serial.println("mqttClient connected");
   mqttClient.beginMessage(topic, false, 1, false);
-  mqttClient.print(logData);
+  mqttClient.print(data);
   int result = mqttClient.endMessage();
   if (result)
   {
@@ -68,7 +68,7 @@ bool AwsIotLogger::publishLog(const char *logData, const char *topic = awsTopic)
   }
 }
 
-void AwsIotLogger::loop()
+void AwsIotMqttClient::loop()
 {
   mqttClient.poll();
 }
