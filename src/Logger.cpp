@@ -37,10 +37,11 @@ void Logger::log(const LogParams &params)
     stream->write(data);
     stream->write("\n");
   }
-  // if (params.notification)
-  // {
+  if (params.notification)
+  {
     // TODO: Cloud Notifications
-  // }
+    cloudLogger->publishLog(data, "greenhouse/notifications");
+  }
   if (params.cloud)
   {
     // Get the current time
