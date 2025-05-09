@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "arduino_secrets.h"
-#include "AwsIotLogger.h"
+#include "AwsIotMqttClient.h"
 
 class LogParamsBuilder;
 
