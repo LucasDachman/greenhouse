@@ -25,7 +25,7 @@ char pass[] = WIFI_PASS;
 
 int oneSec = 1000L;
 int oneMin = oneSec * 60;
-int fifteenMin = 15 * oneMin;
+int tenMin = 10 * oneMin;
 
 auto timer = timer_create_default(); // create a timer with default settings
 SmoothingFilter brightnessFilter(20);
@@ -241,7 +241,7 @@ void setup()
   setupTime();
   ArduinoBearSSL.onGetTime(getTime);
 
-  timer.every(fifteenMin, sendData);
+  timer.every(tenMin, sendData);
   timer.every(100, checkBtns);
   timer.every(oneSec, [](void *) -> bool
               { sensors.sampleBrightness(); return true; });
