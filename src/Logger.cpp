@@ -39,7 +39,6 @@ void Logger::log(const LogParams &params)
   }
   if (params.notification)
   {
-    // TODO: Cloud Notifications
     mqttClient->publish(data, "greenhouse/notifications");
   }
   if (params.cloud)
@@ -103,12 +102,6 @@ LogParamsBuilder &LogParamsBuilder::cloud(bool cloud_log)
 LogParamsBuilder &LogParamsBuilder::topic(const char *topic)
 {
   params.topic = topic;
-  return *this;
-}
-
-LogParamsBuilder &LogParamsBuilder::notifType(const char *notif_type)
-{
-  params.notif_type = notif_type;
   return *this;
 }
 

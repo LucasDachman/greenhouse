@@ -15,7 +15,6 @@ public:
   {
     bool serial = false;
     bool notification = false;
-    const char *notif_type = "Log";
     bool cloud = false;
     const char *topic = "greenhouse/logs/mkrwifi1010";
     JsonVariant dataJson;
@@ -48,8 +47,6 @@ public:
   LogParamsBuilder &cloud(bool cloud_log);
 
   LogParamsBuilder &topic(const char *topic);
-
-  LogParamsBuilder &notifType(const char *notif_type);
 
   LogParamsBuilder &data(const char *data);
 
