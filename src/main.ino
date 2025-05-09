@@ -19,6 +19,8 @@
 
 MKRIoTCarrier carrier;
 
+#include "LED.hpp"
+
 // WiFi credentials.
 char ssid[] = WIFI_SSID;
 char pass[] = WIFI_PASS;
@@ -170,6 +172,24 @@ bool fanIfNeeded(void *)
   return true;
 }
 
+bool healthBlink(void *)
+{
+  static bool led_on = false;
+  carrier.leds.setPixelColor(0, 0, 255, 0);
+  if (led_on)
+  {
+    led_on = false;
+    carrier.leds.setBrightness(50);
+  }
+  else
+  {
+    carrier.leds.setBrightness(0);
+    led_on = true;
+  }
+  carrier.leds.show();
+  return true;
+}
+
 void setupTime()
 {
   unsigned long epoch = 0;
@@ -184,7 +204,9 @@ void setupTime()
   if (epoch == 0)
   {
     Serial.println("Failed to retrieve time from NTP server.");
-    return;
+    ledRed(0);
+    while (1)
+      ;
   }
 
   Serial.print("Epoch time: ");
@@ -201,15 +223,6 @@ void setup()
   }
   delay(2000);
 
-  if (!ECCX08.begin())
-  {
-    Serial.println("No ECCX08 present!");
-    while (1)
-      ;
-  }
-
-  sslClient.setEccSlot(0, awsIotCertificatePemCrt);
-
   Serial.println("Starting carrier...");
   // Begin carrier hardware
   if (!carrier.begin())
@@ -221,6 +234,17 @@ void setup()
 
   carrier.noCase();
   carrier.display.enableDisplay(false);
+  carrier.leds.setBrightness(50);
+
+  ledWhite(SETUP_LED);
+  if (!ECCX08.begin())
+  {
+    Serial.println("No ECCX08 present!");
+    ledRed(SETUP_LED);
+    while (1)
+      ;
+  }
+  sslClient.setEccSlot(0, awsIotCertificatePemCrt);
 
   Serial.println("Setting Pin modes...");
   pinMode(PUMP_1, OUTPUT);
@@ -230,6 +254,7 @@ void setup()
   sensors.setup();
 
   Serial.println("Connecting to WiFi...");
+  ledBlue(SETUP_LED);
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -238,22 +263,25 @@ void setup()
   }
   Serial.println("Connected.");
 
+  ledPurple(SETUP_LED);
   setupTime();
   ArduinoBearSSL.onGetTime(getTime);
 
   timer.every(tenMin, sendData);
-  timer.every(100, checkBtns);
+  // timer.every(100, checkBtns);
   timer.every(oneSec, [](void *) -> bool
               { sensors.sampleBrightness(); return true; });
   timer.every(oneSec, waterIfNeeded);
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
+  // timer.every(250, healthBlink);
 
   logger.build()
       .serial(true)
       .cloud(true)
       .data("Setup complete")
       .log();
+
   sendData();
 }
 
@@ -261,4 +289,5 @@ void loop()
 {
   timer.tick();
   awsIotMqttClient.loop();
+  checkBtns(nullptr);
 }

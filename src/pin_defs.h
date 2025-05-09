@@ -9,6 +9,11 @@
 #define PUMP_2 13
 #define SENSOR_POWER 0
 #define MUX_OUTPUT A0
+
+#define SETUP_LED 4
+#define MQTT_LED 0
+
+
 #define NUM_SOIL_SENSORS 5
 
 const byte MUX_SELECT_PINS[3] = {3, 4, 5}; // S0, S1, S2

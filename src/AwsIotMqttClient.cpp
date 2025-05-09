@@ -1,4 +1,6 @@
-#include "AwsIotLogger.h"
+#include "AwsIotMqttClient.h"
+#include "LED.hpp"
+#include "pin_defs.h"
 
 int freeMemory();
 
@@ -38,6 +40,7 @@ bool AwsIotMqttClient::connect()
 
 bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
 {
+  ledOrange(4);
   Serial.println("Publishing log data to AWS IoT Core");
   if (!mqttClient.connected())
   {
@@ -58,12 +61,14 @@ bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
   if (result)
   {
     // Serial.println("Log data published successfully");
+    ledGreen(4);
     return true;
   }
   else
   {
     Serial.print("Failed to publish log data. Code: ");
     Serial.println(result);
+    ledRed(4);
     return false;
   }
 }
