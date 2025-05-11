@@ -14,26 +14,11 @@ Logger::Logger(Stream &stream, AwsIotMqttClient &awsIotMqttClient) : stream(&str
 
 void Logger::log(const LogParams &params)
 {
-  char *data = nullptr;
-  if (params.dataJson)
-  {
-    // Serialize the JSON object to a string
-    size_t len = measureJson(params.dataJson);
-    data = new char[len + 1];
-    serializeJson(params.dataJson, data, len + 1);
-  } else if (params.data)
-  {
-    data = new char[strlen(params.data) + 3];
-    snprintf(data, strlen(params.data) + 3, "\"%s\"", params.data);
-  }
-  else
-  {
-    data = new char[1];
-    data[0] = '\0';
-  }
-
   if (params.serial)
   {
+    size_t len = measureJson(params.doc["data"]);
+    char *data = new char[len + 1];
+    serializeJson(params.doc["data"], data, len + 1);
     stream->write(data);
     stream->write("\n");
   }
@@ -51,12 +36,12 @@ void Logger::log(const LogParams &params)
     // Serial.print("data: ");
     // Serial.println(data);
 
-    // Serial.print("Free memory: ");
-    // Serial.println(freeMemory());
+    Serial.print("Free memory: ");
+    Serial.println(freeMemory());
 
     JsonDocument doc;
     doc["t"] = timeString;
-    doc["data"] = data;
+    doc["data"] = params.doc["data"];
     if (params.notification)
     {
       doc["ntfn"] = true;
@@ -72,7 +57,7 @@ void Logger::log(const LogParams &params)
 
     delete[] json;
   }
-  delete[] data;
+  // delete[] data;
 }
 
 LogParamsBuilder Logger::build()
@@ -112,25 +97,25 @@ LogParamsBuilder &LogParamsBuilder::topic(const char *topic)
 
 LogParamsBuilder &LogParamsBuilder::data(JsonVariant data)
 {
-  params.dataJson = data;
+  params.doc["data"] = data;
   return *this;
 }
 
 LogParamsBuilder &LogParamsBuilder::data(const char *data)
 {
-  params.data = data;
+  params.doc["data"] = data;
   return *this;
 }
 
 LogParamsBuilder &LogParamsBuilder::data(String &data)
 {
-  params.data = data.c_str();
+  params.doc["data"] = data;
   return *this;
 }
 
 LogParamsBuilder &LogParamsBuilder::data(int data)
 {
-  params.data = String(data).c_str();
+  params.doc["data"] = data;
   return *this;
 }
 

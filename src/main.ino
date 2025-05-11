@@ -98,8 +98,8 @@ bool waterIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .data("Watering")
         .log();
     digitalWrite(PUMP_1, HIGH);
@@ -108,8 +108,8 @@ bool waterIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .data("Stopping watering")
         .log();
     digitalWrite(PUMP_1, LOW);
@@ -125,8 +125,8 @@ bool humidifyIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .data("Mister On")
         .log();
     digitalWrite(MISTER, HIGH);
@@ -135,8 +135,8 @@ bool humidifyIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .data("Mister Off")
         .log();
     digitalWrite(MISTER, LOW);
@@ -153,8 +153,8 @@ bool fanIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .dataf("Fan On %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, HIGH);
@@ -163,8 +163,8 @@ bool fanIfNeeded(void *)
   {
     logger.build()
         .serial(true)
-        .cloud(true)
         .notification(true)
+        .topic("greenhouse/data/actions")
         .dataf("Fan Off %sF", String(temp).c_str())
         .log();
     digitalWrite(FAN_1, LOW);

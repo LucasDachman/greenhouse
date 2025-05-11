@@ -17,8 +17,7 @@ public:
     bool notification = false;
     bool cloud = false;
     const char *topic = "greenhouse/logs/mkrwifi1010";
-    JsonVariant dataJson;
-    const char *data;
+    JsonDocument doc;
   };
 
   Logger(Stream &stream, AwsIotMqttClient &awsIotMqttClient);
