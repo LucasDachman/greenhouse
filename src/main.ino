@@ -205,6 +205,28 @@ void setupTime()
   Serial.println(epoch);
 }
 
+void setupWiFi()
+{
+  Serial.println("Connecting to WiFi...");
+  ledBlue(SETUP_LED);
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(1000);
+  }
+  Serial.println("Connected.");
+}
+
+bool reconnectWiFi(void *)
+{
+  switch (WiFi.status()) {
+    case WL_CONNECT_FAILED:
+    case WL_CONNECTION_LOST:
+    case WL_DISCONNECTED: setupWiFi(); break;
+  }
+}
+
 void setup()
 {
   // Debug console
@@ -245,15 +267,7 @@ void setup()
   pinMode(FAN_1, OUTPUT);
   sensors.setup();
 
-  Serial.println("Connecting to WiFi...");
-  ledBlue(SETUP_LED);
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(1000);
-  }
-  Serial.println("Connected.");
+  setupWiFi();
 
   ledPurple(SETUP_LED);
   setupTime();
@@ -266,6 +280,7 @@ void setup()
   timer.every(5 * oneMin, waterIfNeeded);
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
+  timer.every(30 * oneSec, reconnectWiFi);
   // timer.every(250, healthBlink);
 
   logger.build()
