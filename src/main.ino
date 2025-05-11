@@ -16,8 +16,11 @@
 #include "SensorReader.h"
 #include <ArduinoJson.h>
 #include <arduino-timer.h>
+#include <WDTZero.h>
 
 MKRIoTCarrier carrier;
+
+WDTZero watchdog;
 
 #include "LED.hpp"
 
@@ -57,6 +60,11 @@ int freeMemory()
 unsigned long getTime()
 {
   return WiFi.getTime();
+}
+
+void onShutdown()
+{
+  Serial.println("Shutting down...");
 }
 
 bool sendData(void *)
@@ -244,6 +252,10 @@ void setup()
   }
   delay(2000);
 
+  Serial.println("Starting watchdog...");
+  watchdog.attachShutdown(onShutdown);
+  watchdog.setup(WDT_SOFTCYCLE8M);
+
   Serial.println("Starting carrier...");
   // Begin carrier hardware
   if (!carrier.begin())
@@ -303,6 +315,7 @@ void setup()
 
 void loop()
 {
+  watchdog.clear();
   timer.tick();
   awsIotMqttClient.loop();
   checkBtns(nullptr);
