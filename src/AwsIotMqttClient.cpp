@@ -77,5 +77,3 @@ void AwsIotMqttClient::loop()
 {
   mqttClient.poll();
 }
-
-

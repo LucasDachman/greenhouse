@@ -13,21 +13,15 @@ void selectMuxPin(byte pin)
   }
 }
 
-SensorReader::SensorReader(MKRIoTCarrier &carrier, Logger &logger, Timer<> &timer)
+SensorReader::SensorReader(MKRIoTCarrier &carrier)
     : carrier(carrier),
-      logger(logger),
-      timer(timer),
       temperature(-1),
       humidity(-1),
       brightness(-1),
       co2(-1),
-      brightnessFilter(20)
-{
-  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
-  {
-    soilDrynessValues[i] = -1;
-  }
-}
+      brightnessFilter(20),
+      soilDrynessValues{0, 0, 0, 0, 0}
+{}
 
 void SensorReader::setup()
 {
@@ -50,6 +44,7 @@ void SensorReader::updateSoilDryness()
     selectMuxPin(muxPin);
     delay(500); // Allow time for the sensor to stabilize
     soilDrynessValues[i] = analogRead(MUX_OUTPUT);
+    normalizeSoilDryness(soilDrynessValues[i], i);
     // Serial.print("Soil Sensor ");
     // Serial.print(i);
     // Serial.print(": ");
@@ -125,4 +120,38 @@ int SensorReader::getBrightness()
 float SensorReader::getCo2()
 {
   return co2;
+}
+
+void SensorReader::printAll()
+{
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+
+  Serial.print("Humidity: ");
+  Serial.println(humidity);
+
+  Serial.print("Brightness: ");
+  Serial.println(brightness);
+
+  Serial.print("CO2: ");
+  Serial.println(co2);
+
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    Serial.print("Soil Sensor ");
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(soilDrynessValues[i]);
+  }
+}
+
+void SensorReader::normalizeSoilDryness(int &soilDryness, int sensorIndex)
+{
+  if (sensorIndex < 0 || sensorIndex >= NUM_SOIL_SENSORS)
+  {
+    return; // Invalid index
+  }
+  int ub = SOIL_UB[sensorIndex];
+  int lb = SOIL_LB[sensorIndex];
+  soilDryness = map(soilDryness, lb, ub, 0, 100);
 }

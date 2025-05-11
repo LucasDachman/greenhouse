@@ -36,7 +36,15 @@ WiFiClient wifiClient;
 BearSSLClient sslClient(wifiClient);
 AwsIotMqttClient awsIotMqttClient(sslClient);
 Logger logger(Serial, awsIotMqttClient);
-SensorReader sensors(carrier, logger, timer);
+SensorReader sensors(carrier);
+
+const char *SOIL_KEYS[NUM_SOIL_SENSORS] = {
+    "soil0",
+    "soil1",
+    "soil2",
+    "soil3",
+    "soil4"
+};
 
 extern "C" char *sbrk(int incr);
 
@@ -63,8 +71,7 @@ bool sendData(void *)
   doc["co2"] = sensors.getCo2();
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    String key = "soil" + String(i + 1);
-    doc[key] = sensors.getSoilDryness(i);
+    doc[SOIL_KEYS[i]] = sensors.getSoilDryness(i);
   }
   doc.shrinkToFit();
 
@@ -212,7 +219,7 @@ void setupWiFi()
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED)
   {
-    Serial.print(".");
+    Serial.println(WiFi.status());
     delay(1000);
   }
   Serial.println("Connected.");
@@ -281,6 +288,8 @@ void setup()
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
   timer.every(30 * oneSec, reconnectWiFi);
+  // timer.every(5 * oneSec, [](void *) -> bool
+  //             { sensors.updateAll(); sensors.printAll(); return true; });
   // timer.every(250, healthBlink);
 
   logger.build()
@@ -289,7 +298,7 @@ void setup()
       .data("Setup complete")
       .log();
 
-  sendData();
+  // sendData();
 }
 
 void loop()
