@@ -103,15 +103,7 @@ bool waterIfNeeded(void *)
         .data("Watering")
         .log();
     digitalWrite(PUMP_1, HIGH);
-  }
-  else if (digitalRead(PUMP_1) == HIGH && sensors.getSoilDryness(0) < WATER_SOIL_AT)
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data("Stopping watering")
-        .log();
+    delay(3000);
     digitalWrite(PUMP_1, LOW);
   }
   return true;
@@ -271,7 +263,7 @@ void setup()
   // timer.every(100, checkBtns);
   timer.every(oneSec, [](void *) -> bool
               { sensors.sampleBrightness(); return true; });
-  timer.every(oneSec, waterIfNeeded);
+  timer.every(5 * oneMin, waterIfNeeded);
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
   // timer.every(250, healthBlink);
