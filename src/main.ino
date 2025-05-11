@@ -248,7 +248,7 @@ void setup()
 
   carrier.noCase();
   carrier.display.enableDisplay(false);
-  carrier.leds.setBrightness(50);
+  carrier.leds.setBrightness(100);
 
   ledWhite(SETUP_LED);
   if (!ECCX08.begin())
