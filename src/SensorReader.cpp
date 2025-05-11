@@ -80,7 +80,7 @@ void SensorReader::sampleBrightness()
     int r, g, b, brightness_sample;
     carrier.Light.readColor(r, g, b, brightness_sample);
 
-    brightnessFilter.addSample(brightness);
+    brightnessFilter.addSample(brightness_sample);
   }
 }
 
