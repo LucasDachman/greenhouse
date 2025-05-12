@@ -89,7 +89,7 @@ void SensorReader::updateAll()
   updateSoilDryness();
   updateTemperature();
   updateHumidity();
-  sampleBrightness();
+  updateBrightness();
   updateCo2();
 }
 
