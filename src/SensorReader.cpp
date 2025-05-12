@@ -65,7 +65,7 @@ void SensorReader::updateHumidity()
 
 void SensorReader::updateBrightness()
 {
-  brightness = brightnessFilter.getSmoothedValueWithin(5000);
+  brightness = brightnessFilter.getSmoothedValue();
 }
 
 void SensorReader::sampleBrightness()
