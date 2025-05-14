@@ -1,6 +1,6 @@
 #include "arduino_secrets.h"
 
-#define WATER_SOIL_AT 710
+#define WATER_SOIL_AT 75
 #define MIST_AT 40
 
 #define TEMP_LOW_BOUND 75
@@ -17,6 +17,7 @@
 #include <ArduinoJson.h>
 #include <arduino-timer.h>
 #include <WDTZero.h>
+#include "LogHelpers.hpp"
 
 MKRIoTCarrier carrier;
 
@@ -46,8 +47,7 @@ const char *SOIL_KEYS[NUM_SOIL_SENSORS] = {
     "soil1",
     "soil2",
     "soil3",
-    "soil4"
-};
+    "soil4"};
 
 extern "C" char *sbrk(int incr);
 
@@ -115,7 +115,7 @@ bool waterIfNeeded(void *)
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .data("Watering")
+        .data(pumpLogDoc(1, 0, sensors.getSoilDryness(0)))
         .log();
     digitalWrite(PUMP_1, HIGH);
     delay(3000);
@@ -134,7 +134,7 @@ bool humidifyIfNeeded(void *)
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .data("Mister On")
+        .data(misterLogDoc(1, sensors.getHumidity()))
         .log();
     digitalWrite(MISTER, HIGH);
   }
@@ -144,7 +144,7 @@ bool humidifyIfNeeded(void *)
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .data("Mister Off")
+        .data(misterLogDoc(0, sensors.getHumidity()))
         .log();
     digitalWrite(MISTER, LOW);
   }
@@ -162,7 +162,7 @@ bool fanIfNeeded(void *)
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .dataf("Fan On %sF", String(temp).c_str())
+        .data(fanLogDoc(1, temp))
         .log();
     digitalWrite(FAN_1, HIGH);
   }
@@ -172,7 +172,7 @@ bool fanIfNeeded(void *)
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .dataf("Fan Off %sF", String(temp).c_str())
+        .data(fanLogDoc(0, temp))
         .log();
     digitalWrite(FAN_1, LOW);
   }
@@ -235,10 +235,13 @@ void setupWiFi()
 
 bool reconnectWiFi(void *)
 {
-  switch (WiFi.status()) {
-    case WL_CONNECT_FAILED:
-    case WL_CONNECTION_LOST:
-    case WL_DISCONNECTED: setupWiFi(); break;
+  switch (WiFi.status())
+  {
+  case WL_CONNECT_FAILED:
+  case WL_CONNECTION_LOST:
+  case WL_DISCONNECTED:
+    setupWiFi();
+    break;
   }
 }
 
