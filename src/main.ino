@@ -257,7 +257,7 @@ void setup()
 
   Serial.println("Starting watchdog...");
   watchdog.attachShutdown(onShutdown);
-  watchdog.setup(WDT_SOFTCYCLE8M);
+  watchdog.setup(WDT_SOFTCYCLE4M);
 
   Serial.println("Starting carrier...");
   // Begin carrier hardware
