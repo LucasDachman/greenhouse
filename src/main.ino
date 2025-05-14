@@ -109,7 +109,7 @@ bool checkBtns(void *)
 bool waterIfNeeded(void *)
 {
   sensors.updateSoilDryness();
-  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > WATER_SOIL_AT)
+  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > SOIL_THRESHOLDS[0])
   {
     logger.build()
         .serial(true)
