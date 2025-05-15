@@ -29,15 +29,6 @@ const int SOIL_LB[NUM_SOIL_SENSORS] = {
     0 // Sensor 4
 };
 
-// Percentage threshold for soil dryness
-// This is the value where we start watering
-const int SOIL_THRESHOLDS[NUM_SOIL_SENSORS] = {
-    100,  // Sensor 0
-    100,  // Sensor 1
-    75,  // Sensor 2
-    100,  // Sensor 3
-    100   // Sensor 4
-};
 
 class SensorReader
 {
@@ -54,6 +45,7 @@ class SensorReader
     void updateCo2();
     void updateAll();
 
+    void getSoilDryness(int values[NUM_SOIL_SENSORS]);
     int getSoilDryness(int sensorIndex);
     int getTemperature();
     int getHumidity();

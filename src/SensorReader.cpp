@@ -100,6 +100,13 @@ void SensorReader::updateAll()
   updateCo2();
 }
 
+void SensorReader::getSoilDryness(int values[NUM_SOIL_SENSORS]) {
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    values[i] = soilDrynessValues[i];
+  }
+}
+
 int SensorReader::getSoilDryness(int sensorIndex)
 {
   if (sensorIndex < 0 || sensorIndex >= NUM_SOIL_SENSORS)

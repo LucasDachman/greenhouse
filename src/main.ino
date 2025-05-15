@@ -1,11 +1,6 @@
 #include "arduino_secrets.h"
-
-#define WATER_SOIL_AT 75
-#define MIST_AT 40
-
-#define TEMP_LOW_BOUND 75
-#define TEMP_HIGH_BOUND 75
-
+#include "globals.h"
+#include "targets.h"
 #include "pin_defs.h"
 #include <SPI.h>
 #include <WiFiNINA.h>
@@ -18,6 +13,10 @@
 #include <arduino-timer.h>
 #include <WDTZero.h>
 #include "LogHelpers.hpp"
+#include "Actuator.h"
+#include "FanStrategy.hpp"
+#include "MisterStrategy.hpp"
+#include "PumpStrategy.hpp"
 
 MKRIoTCarrier carrier;
 
@@ -34,20 +33,18 @@ int oneMin = oneSec * 60;
 int tenMin = 10 * oneMin;
 
 auto timer = timer_create_default(); // create a timer with default settings
-SmoothingFilter brightnessFilter(20);
 
-WiFiClient wifiClient;
-BearSSLClient sslClient(wifiClient);
-AwsIotMqttClient awsIotMqttClient(sslClient);
-Logger logger(Serial, awsIotMqttClient);
 SensorReader sensors(carrier);
 
-const char *SOIL_KEYS[NUM_SOIL_SENSORS] = {
-    "soil0",
-    "soil1",
-    "soil2",
-    "soil3",
-    "soil4"};
+FanStrategy fanStrategy;
+Actuator<int> fan(FAN_1, fanStrategy);
+
+MisterStrategy misterStrategy;
+Actuator<int> mister(MISTER, misterStrategy);
+
+PumpStrategy pumpStrategy(0);
+Actuator<PumpStrategyParams> pump_1(PUMP_1, pumpStrategy);
+
 
 extern "C" char *sbrk(int incr);
 
@@ -109,73 +106,25 @@ bool checkBtns(void *)
 bool waterIfNeeded(void *)
 {
   sensors.updateSoilDryness();
-  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(2) > SOIL_THRESHOLDS[2])
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data(pumpLogDoc(1, 0, sensors.getSoilDryness(2)))
-        .log();
-    digitalWrite(PUMP_1, HIGH);
-    delay(3000);
-    digitalWrite(PUMP_1, LOW);
-  }
+  PumpStrategyParams params;
+  sensors.getSoilDryness(params.values);
+  params.start = 2;
+  params.end = 3;
+  pump_1.respondTo(params);
   return true;
 }
 
 bool humidifyIfNeeded(void *)
 {
   sensors.updateHumidity();
-  bool mister_on = digitalRead(MISTER) == HIGH;
-  if (!mister_on && sensors.getHumidity() < MIST_AT)
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data(misterLogDoc(1, sensors.getHumidity()))
-        .log();
-    digitalWrite(MISTER, HIGH);
-  }
-  else if (mister_on && sensors.getHumidity() > MIST_AT)
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data(misterLogDoc(0, sensors.getHumidity()))
-        .log();
-    digitalWrite(MISTER, LOW);
-  }
+  mister.respondTo(sensors.getHumidity());
   return true;
 }
 
 bool fanIfNeeded(void *)
 {
-  bool fan_on = digitalRead(FAN_1) == HIGH;
   sensors.updateTemperature();
-  int temp = sensors.getTemperature();
-  if (!fan_on && temp > TEMP_HIGH_BOUND)
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data(fanLogDoc(1, temp))
-        .log();
-    digitalWrite(FAN_1, HIGH);
-  }
-  else if (fan_on && temp < TEMP_LOW_BOUND)
-  {
-    logger.build()
-        .serial(true)
-        .notification(true)
-        .topic("greenhouse/data/actions")
-        .data(fanLogDoc(0, temp))
-        .log();
-    digitalWrite(FAN_1, LOW);
-  }
+  fan.respondTo(sensors.getTemperature());
   return true;
 }
 
@@ -241,8 +190,9 @@ bool reconnectWiFi(void *)
   case WL_CONNECTION_LOST:
   case WL_DISCONNECTED:
     setupWiFi();
-    break;
+    return true;
   }
+  return false;
 }
 
 void setup()

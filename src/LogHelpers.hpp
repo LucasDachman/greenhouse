@@ -1,6 +1,10 @@
-#include <ArduinoJson.h>
+#ifndef LOGHELPERS_H
+#define LOGHELPERS_H
 
-JsonDocument fanLogDoc(byte state, int temp)
+#include <ArduinoJson.h>
+#include "targets.h"
+
+inline JsonDocument fanLogDoc(byte state, int temp)
 {
   JsonDocument doc;
   doc["fanState"] = state;
@@ -9,7 +13,7 @@ JsonDocument fanLogDoc(byte state, int temp)
   return doc;
 }
 
-JsonDocument misterLogDoc(byte state, int hum)
+inline JsonDocument misterLogDoc(byte state, int hum)
 {
   JsonDocument doc;
   doc["misterState"] = state;
@@ -18,12 +22,17 @@ JsonDocument misterLogDoc(byte state, int hum)
   return doc;
 }
 
-JsonDocument pumpLogDoc(byte state, byte pumpIndex, int soilDryness)
+inline JsonDocument pumpLogDoc(byte state, byte pumpIndex, int soilValues[])
 {
   JsonDocument doc;
   doc["pumpState"] = state;
   doc["pumpIdx"] = pumpIndex;
-  doc["soilDryness"] = soilDryness;
+  for (int i = 0; i < NUM_SOIL_SENSORS; i++)
+  {
+    doc[SOIL_KEYS[i]] = soilValues[i];
+  }
   doc.shrinkToFit();
   return doc;
 }
+
+#endif
