@@ -1,13 +1,13 @@
 #ifndef ACTUATORSTRATEGY_H
 #define ACTUATORSTRATEGY_H
 
-#include <functional>
+template <typename T> class Actuator;
 
-template <typename ValueType>
+template <typename T>
 class ActuatorStrategy {
   public:
 
-    virtual void execute(ValueType &value, bool isOn, std::function<void()> start, std::function<void()> stop) = 0;
+    virtual void execute(T &value, Actuator<T> &actuator) = 0;
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "targets.h"
 #include "Actuator.h"
 #include "ActuatorStrategy.h"
+#include "Actuator.h"
 #include "globals.h"
 
 class FanStrategy : public ActuatorStrategy<int>
@@ -10,11 +11,11 @@ class FanStrategy : public ActuatorStrategy<int>
 
 public:
 
-  void execute(int &temp, bool isOn, std::function<void()> start, std::function<void()> stop) override
+  void execute(int &temp, Actuator<int> &fan) override
   {
-    if (!isOn && temp > TEMP_HIGH_BOUND)
+    if (!fan.isOn() && temp > TEMP_HIGH_BOUND)
     {
-      start();
+      fan.start();
       logger.build()
           .serial(true)
           .notification(true)
@@ -22,9 +23,9 @@ public:
           .data(fanLogDoc(1, temp))
           .log();
     }
-    else if (isOn && temp < TEMP_LOW_BOUND)
+    else if (fan.isOn() && temp < TEMP_LOW_BOUND)
     {
-      stop();
+      fan.stop();
       logger.build()
           .serial(true)
           .notification(true)

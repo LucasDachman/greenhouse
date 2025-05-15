@@ -2,6 +2,7 @@
 #define PUMPSTRATEGY_H
 
 #include "ActuatorStrategy.h"
+#include "Actuator.h"
 #include <Arduino.h>
 #include "targets.h"
 #include "Logger.h"
@@ -20,34 +21,34 @@ class PumpStrategy : public ActuatorStrategy<PumpStrategyParams>
 public:
   byte idx;
 
-  PumpStrategy(byte idx) : idx(idx) {}
+  PumpStrategy(byte idx) : idx(idx) {};
 
-  void execute(PumpStrategyParams &params, bool isOn, std::function<void()> start, std::function<void()> stop) override
+  void execute(PumpStrategyParams &value, Actuator<PumpStrategyParams> &pump) override
   {
 
-    bool pump = false;
-    for (size_t i = params.start; i < params.end; i++)
+    bool shouldStart = false;
+    for (size_t i = value.start; i < value.end; i++)
     {
-      int soilDryness = params.values[i];
+      int soilDryness = value.values[i];
       int threshold = SOIL_THRESHOLDS[i];
 
       if (soilDryness > threshold)
       {
-        pump = true;
+        shouldStart = true;
         break;
       }
     }
-    if (pump)
+    if (shouldStart)
     {
       logger.build()
           .serial(true)
           .notification(true)
           .topic("greenhouse/data/actions")
-          .data(pumpLogDoc(1, idx, params.values))
+          .data(pumpLogDoc(1, idx, value.values))
           .log();
-      start();
+      pump.start();
       delay(3000);
-      stop();
+      pump.stop();
     }
   }
 };

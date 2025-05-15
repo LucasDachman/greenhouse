@@ -29,7 +29,7 @@ bool Actuator<T>::isOn()
 template <typename T>
 void Actuator<T>::respondTo(T value)
 {
-  strategy.execute(value, isOn(), std::bind(&Actuator<T>::start, this), std::bind(&Actuator<T>::stop, this));
+  strategy.execute(value, *this);
 }
 
 template class Actuator<int>;

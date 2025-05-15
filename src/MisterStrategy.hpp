@@ -2,6 +2,7 @@
 #define MISTERSTRATEGY_H
 
 #include "ActuatorStrategy.h"
+#include "Actuator.h"
 #include <Arduino.h>
 #include "targets.h"
 #include "Logger.h"
@@ -12,11 +13,11 @@ class MisterStrategy : public ActuatorStrategy<int>
 {
 public:
 
-    void execute(int &humidity, bool isOn, std::function<void()> start, std::function<void()> stop)
+    void execute(int &humidity, Actuator<int> &mister) override
     {
-        if (!isOn && humidity < MIST_AT)
+        if (!mister.isOn() && humidity < MIST_AT)
         {
-            start();
+            mister.start();
             logger.build()
                 .serial(true)
                 .notification(true)
@@ -24,9 +25,9 @@ public:
                 .data(misterLogDoc(1, humidity))
                 .log();
         }
-        else if (isOn && humidity > MIST_AT)
+        else if (mister.isOn() && humidity > MIST_AT)
         {
-            stop();
+            mister.stop();
             logger.build()
                 .serial(true)
                 .notification(true)
