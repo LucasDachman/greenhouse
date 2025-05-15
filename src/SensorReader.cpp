@@ -37,13 +37,20 @@ void SensorReader::updateSoilDryness()
 {
   // SENSOR_POWER is connected to a high-side switch
   digitalWrite(SENSOR_POWER, LOW);
-  delay(500); // Allow time for the sensor to stabilize
   for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
     byte muxPin = SOIL_SENSOR_MUX_PINS[i];
     selectMuxPin(muxPin);
-    delay(500); // Allow time for the sensor to stabilize
+    delay(1000); // Allow time for the sensor to stabilize
     soilDrynessValues[i] = analogRead(MUX_OUTPUT);
+    // Take 10 samples and average them
+    SmoothingFilter filter(10);
+    for (int j = 0; j < 10; j++)
+    {
+      filter.addSample(analogRead(MUX_OUTPUT));
+      delay(50);
+    }
+    soilDrynessValues[i] = filter.getSmoothedValue();
     normalizeSoilDryness(soilDrynessValues[i], i);
     // Serial.print("Soil Sensor ");
     // Serial.print(i);
