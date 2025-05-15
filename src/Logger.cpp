@@ -41,6 +41,7 @@ void Logger::log(const LogParams &params)
 
     JsonDocument doc;
     doc["t"] = timeString;
+    doc["ut"] = millis();
     doc["data"] = params.doc["data"];
     if (params.notification)
     {
