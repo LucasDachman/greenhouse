@@ -60,7 +60,7 @@ bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
   int result = mqttClient.endMessage();
   if (result)
   {
-    // Serial.println("Log data published successfully");
+    Serial.println("Log data published successfully");
     ledGreen(4);
     return true;
   }
