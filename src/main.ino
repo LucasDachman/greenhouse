@@ -109,13 +109,13 @@ bool checkBtns(void *)
 bool waterIfNeeded(void *)
 {
   sensors.updateSoilDryness();
-  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(0) > SOIL_THRESHOLDS[0])
+  if (digitalRead(PUMP_1) == LOW && sensors.getSoilDryness(2) > SOIL_THRESHOLDS[2])
   {
     logger.build()
         .serial(true)
         .notification(true)
         .topic("greenhouse/data/actions")
-        .data(pumpLogDoc(1, 0, sensors.getSoilDryness(0)))
+        .data(pumpLogDoc(1, 0, sensors.getSoilDryness(2)))
         .log();
     digitalWrite(PUMP_1, HIGH);
     delay(3000);
