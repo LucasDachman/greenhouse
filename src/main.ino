@@ -32,7 +32,11 @@ int oneSec = 1000L;
 int oneMin = oneSec * 60;
 int tenMin = 10 * oneMin;
 
-auto timer = timer_create_default(); // create a timer with default settings
+auto timer = Timer<
+    10,     /* max tasks */
+    millis, /* time function for timer */
+    void *  /* handler argument type */
+    >();
 
 SensorReader sensors(carrier);
 
@@ -44,7 +48,6 @@ Actuator<int> mister(MISTER, misterStrategy);
 
 PumpStrategy pumpStrategy(0);
 Actuator<PumpStrategyParams> pump_1(PUMP_1, pumpStrategy);
-
 
 extern "C" char *sbrk(int incr);
 
