@@ -11,7 +11,7 @@
 #define MUX_OUTPUT A0
 
 #define SETUP_LED 4
-#define MQTT_LED 0
+#define BTN_1 6
 
 
 #define NUM_SOIL_SENSORS 5

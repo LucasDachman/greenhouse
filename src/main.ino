@@ -115,6 +115,17 @@ bool fanIfNeeded(void *)
   return true;
 }
 
+bool checkBtn()
+{
+  if (digitalRead(BTN_1) == LOW)
+  {
+    Serial.println("Button pressed!");
+    pump_1.start();
+    delay(3000);
+    pump_1.stop();
+  }
+}
+
 bool healthBlink(void *)
 {
   // static bool led_on = false;
@@ -212,6 +223,8 @@ void setup()
   Serial.println("Setting up sensors...");
   sensors.setup();
 
+  pinMode(BTN_1, INPUT_PULLUP);
+
   setupWiFi();
 
   InternalLed::purple();
@@ -219,7 +232,6 @@ void setup()
   ArduinoBearSSL.onGetTime(getTime);
 
   timer.every(tenMin, sendData);
-  // timer.every(100, checkBtns);
   timer.every(5 * oneMin, waterIfNeeded);
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
@@ -244,5 +256,5 @@ void loop()
   watchdog.clear();
   timer.tick();
   awsIotMqttClient.loop();
-  // checkBtns(nullptr);
+  checkBtn();
 }
