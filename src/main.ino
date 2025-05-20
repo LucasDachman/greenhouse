@@ -4,7 +4,6 @@
 #include "pin_defs.h"
 #include <SPI.h>
 #include <WiFiNINA.h>
-#include "Arduino_MKRIoTCarrier.h"
 #include "SmoothingFilter.h"
 #include "Logger.h"
 #include <time.h>
@@ -17,11 +16,6 @@
 #include "FanStrategy.hpp"
 #include "MisterStrategy.hpp"
 #include "PumpStrategy.hpp"
-
-MKRIoTCarrier carrier;
-
-WDTZero watchdog;
-
 #include "LED.hpp"
 
 // WiFi credentials.
@@ -32,13 +26,15 @@ int oneSec = 1000L;
 int oneMin = oneSec * 60;
 int tenMin = 10 * oneMin;
 
+WDTZero watchdog;
+
 auto timer = Timer<
     10,     /* max tasks */
     millis, /* time function for timer */
     void *  /* handler argument type */
     >();
 
-SensorReader sensors(carrier);
+SensorReader sensors;
 
 FanStrategy fanStrategy;
 Actuator<int> fan(FAN_1, fanStrategy);
@@ -75,8 +71,6 @@ bool sendData(void *)
   JsonDocument doc;
   doc["temp"] = sensors.getTemperature();
   doc["hum"] = sensors.getHumidity();
-  doc["brit"] = sensors.getBrightness();
-  doc["co2"] = sensors.getCo2();
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
     doc[SOIL_KEYS[i]] = sensors.getSoilDryness(i);
@@ -94,16 +88,6 @@ bool sendData(void *)
 void sendData()
 {
   sendData(nullptr);
-}
-
-bool checkBtns(void *)
-{
-  carrier.Buttons.update();
-  if (carrier.Buttons.onTouchDown(TOUCH0))
-  {
-    sendData();
-  }
-  return true;
 }
 
 bool waterIfNeeded(void *)
@@ -133,20 +117,20 @@ bool fanIfNeeded(void *)
 
 bool healthBlink(void *)
 {
-  static bool led_on = false;
-  carrier.leds.setPixelColor(0, 0, 255, 0);
-  if (led_on)
-  {
-    led_on = false;
-    carrier.leds.setBrightness(50);
-  }
-  else
-  {
-    carrier.leds.setBrightness(0);
-    led_on = true;
-  }
-  carrier.leds.show();
-  return true;
+  // static bool led_on = false;
+  // carrier.leds.setPixelColor(0, 0, 255, 0);
+  // if (led_on)
+  // {
+  //   led_on = false;
+  //   carrier.leds.setBrightness(50);
+  // }
+  // else
+  // {
+  //   carrier.leds.setBrightness(0);
+  //   led_on = true;
+  // }
+  // carrier.leds.show();
+  // return true;
 }
 
 void setupTime()
@@ -163,7 +147,7 @@ void setupTime()
   if (epoch == 0)
   {
     Serial.println("Failed to retrieve time from NTP server.");
-    ledRed(0);
+    InternalLed::red();
     while (1)
       ;
   }
@@ -175,7 +159,7 @@ void setupTime()
 void setupWiFi()
 {
   Serial.println("Connecting to WiFi...");
-  ledBlue(SETUP_LED);
+  InternalLed::blue();
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -208,50 +192,34 @@ void setup()
   }
   delay(2000);
 
+  // Internal LED pins
+  InternalLed::setup();
+
   Serial.println("Starting watchdog...");
   watchdog.attachShutdown(onShutdown);
   watchdog.setup(WDT_SOFTCYCLE4M);
 
-  Serial.println("Starting carrier...");
-  // Begin carrier hardware
-  if (!carrier.begin())
-  {
-    Serial.println("Failed to initialize carrier!");
-    while (1)
-      ;
-  }
-
-  carrier.noCase();
-  carrier.display.enableDisplay(false);
-  carrier.leds.setBrightness(100);
-
-  ledWhite(SETUP_LED);
+  InternalLed::white();
   if (!ECCX08.begin())
   {
     Serial.println("No ECCX08 present!");
-    ledRed(SETUP_LED);
+    InternalLed::red();
     while (1)
       ;
   }
   sslClient.setEccSlot(0, awsIotCertificatePemCrt);
 
-  Serial.println("Setting Pin modes...");
-  pinMode(PUMP_1, OUTPUT);
-  pinMode(PUMP_2, OUTPUT);
-  pinMode(MISTER, OUTPUT);
-  pinMode(FAN_1, OUTPUT);
+  Serial.println("Setting up sensors...");
   sensors.setup();
 
   setupWiFi();
 
-  ledPurple(SETUP_LED);
+  InternalLed::purple();
   setupTime();
   ArduinoBearSSL.onGetTime(getTime);
 
   timer.every(tenMin, sendData);
   // timer.every(100, checkBtns);
-  timer.every(oneSec, [](void *) -> bool
-              { sensors.sampleBrightness(); return true; });
   timer.every(5 * oneMin, waterIfNeeded);
   timer.every(oneSec, fanIfNeeded);
   timer.every(oneSec, humidifyIfNeeded);
@@ -259,6 +227,8 @@ void setup()
   // timer.every(5 * oneSec, [](void *) -> bool
   //             { sensors.updateAll(); sensors.printAll(); return true; });
   // timer.every(250, healthBlink);
+
+  InternalLed::green();
 
   logger.build()
       .serial(true)
@@ -274,5 +244,5 @@ void loop()
   watchdog.clear();
   timer.tick();
   awsIotMqttClient.loop();
-  checkBtns(nullptr);
+  // checkBtns(nullptr);
 }

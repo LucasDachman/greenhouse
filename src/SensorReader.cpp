@@ -13,15 +13,13 @@ void selectMuxPin(byte pin)
   }
 }
 
-SensorReader::SensorReader(MKRIoTCarrier &carrier)
-    : carrier(carrier),
-      temperature(-1),
+SensorReader::SensorReader()
+    : temperature(-1),
       humidity(-1),
-      brightness(-1),
-      co2(-1),
-      brightnessFilter(20),
-      soilDrynessValues{0, 0, 0, 0, 0}
-{}
+      soilDrynessValues{0, 0, 0, 0, 0},
+      sht31()
+{
+}
 
 void SensorReader::setup()
 {
@@ -30,6 +28,12 @@ void SensorReader::setup()
   for (byte i = 0; i < 3; i++)
   {
     pinMode(MUX_SELECT_PINS[i], OUTPUT);
+  }
+  if (!sht31.begin(0x44))
+  {
+    Serial.println("Couldn't find SHT31");
+    while (1)
+      delay(1);
   }
 }
 
@@ -62,33 +66,26 @@ void SensorReader::updateSoilDryness()
 
 void SensorReader::updateTemperature()
 {
-  temperature = carrier.Env.readTemperature(FAHRENHEIT);
+  float temp_c = sht31.readTemperature();
+  if (isnan(temp_c))
+  {
+    temperature = -1;
+    Serial.println("Failed to read temperature");
+    return;
+  }
+  temperature = 9 / 5 * temp_c + 32; // Convert to Fahrenheit
 }
 
 void SensorReader::updateHumidity()
 {
-  humidity = carrier.Env.readHumidity();
-}
-
-void SensorReader::updateBrightness()
-{
-  brightness = brightnessFilter.getSmoothedValue();
-}
-
-void SensorReader::sampleBrightness()
-{
-  if (carrier.Light.colorAvailable())
+  float hum = sht31.readHumidity();
+  if (isnan(hum))
   {
-    int r, g, b, brightness_sample;
-    carrier.Light.readColor(r, g, b, brightness_sample);
-
-    brightnessFilter.addSample(brightness_sample);
+    humidity = -1;
+    Serial.println("Failed to read humidity");
+    return;
   }
-}
-
-void SensorReader::updateCo2()
-{
-  co2 = carrier.AirQuality.readCO2();
+  humidity = hum;
 }
 
 void SensorReader::updateAll()
@@ -96,11 +93,10 @@ void SensorReader::updateAll()
   updateSoilDryness();
   updateTemperature();
   updateHumidity();
-  updateBrightness();
-  updateCo2();
 }
 
-void SensorReader::getSoilDryness(int values[NUM_SOIL_SENSORS]) {
+void SensorReader::getSoilDryness(int values[NUM_SOIL_SENSORS])
+{
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {
     values[i] = soilDrynessValues[i];
@@ -126,16 +122,6 @@ int SensorReader::getHumidity()
   return humidity;
 }
 
-int SensorReader::getBrightness()
-{
-  return brightness;
-}
-
-float SensorReader::getCo2()
-{
-  return co2;
-}
-
 void SensorReader::printAll()
 {
   Serial.print("Temperature: ");
@@ -143,12 +129,6 @@ void SensorReader::printAll()
 
   Serial.print("Humidity: ");
   Serial.println(humidity);
-
-  Serial.print("Brightness: ");
-  Serial.println(brightness);
-
-  Serial.print("CO2: ");
-  Serial.println(co2);
 
   for (int i = 0; i < NUM_SOIL_SENSORS; i++)
   {

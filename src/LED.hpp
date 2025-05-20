@@ -1,50 +1,63 @@
 #ifndef LED_H
 #define LED_H
 
-#include <Arduino_MKRIoTCarrier.h>
+#include <WiFiNINA.h>
+#include <utility/wifi_drv.h>
 
-extern MKRIoTCarrier carrier;
+#define INT_LED_GREEN 25
+#define INT_LED_RED 26
+#define INT_LED_BLUE 27
 
-inline void ledWhite(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 255, 255, 255);
-  carrier.leds.show();
-}
+class InternalLed {
+  public:
+  static inline void setup()
+  {
+    WiFiDrv::pinMode(INT_LED_GREEN, OUTPUT);
+    WiFiDrv::pinMode(INT_LED_RED, OUTPUT);
+    WiFiDrv::pinMode(INT_LED_BLUE, OUTPUT);
+  }
 
-inline void ledYellow(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 255, 255, 0);
-  carrier.leds.show();
-}
+  static inline void led(int red, int green, int blue)
+  {
+    WiFiDrv::analogWrite(INT_LED_GREEN, green); //GREEN
+    WiFiDrv::analogWrite(INT_LED_RED, red);   //RED
+    WiFiDrv::analogWrite(INT_LED_BLUE, blue);   //BLUE
+  }
 
-inline void ledOrange(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 255, 165, 0);
-  carrier.leds.show();
-}
+  static inline void white()
+  {
+    led(255, 255, 255);
+  }
 
-inline void ledBlue(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 0, 0, 255);
-  carrier.leds.show();
-}
+  static inline void yellow()
+  {
+    led(255, 255, 0);
+  }
 
-inline void ledPurple(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 148, 0, 211);
-  carrier.leds.show();
-}
+  static inline void orange()
+  {
+    led(255, 165, 0);
+  }
 
-inline void ledRed(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 255, 0, 0);
-  carrier.leds.show();
-}
+  static inline void blue()
+  {
+    led(0, 0, 255);
+  }
 
-inline void ledGreen(uint16_t i)
-{
-  carrier.leds.setPixelColor(i, 0, 255, 0);
-  carrier.leds.show();
-}
+  static inline void purple()
+  {
+    led(148, 0, 211);
+  }
+
+  static inline void red()
+  {
+    led(255, 0, 0);
+  }
+
+  static inline void green()
+  {
+    led(0, 255, 0);
+  }
+};
 
 #endif

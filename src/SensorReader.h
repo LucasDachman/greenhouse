@@ -3,11 +3,11 @@
 
 // Encapsulates reading sensor values from the arduino
 
-#include "Arduino_MKRIoTCarrier.h"
 #include "Logger.h"
 #include "pin_defs.h"
 #include "SmoothingFilter.h"
 #include <arduino-timer.h>
+#include <Adafruit_SHT31.h>
 
 // Upper bound for soil sensor readings
 // This is the value of the sensor in water
@@ -33,37 +33,28 @@ const int SOIL_LB[NUM_SOIL_SENSORS] = {
 class SensorReader
 {
   public:
-    SensorReader(MKRIoTCarrier &carrier);
+    SensorReader();
 
     void setup();
 
     void updateSoilDryness();
     void updateTemperature();
     void updateHumidity();
-    void updateBrightness();
-    void sampleBrightness();
-    void updateCo2();
     void updateAll();
 
     void getSoilDryness(int values[NUM_SOIL_SENSORS]);
     int getSoilDryness(int sensorIndex);
     int getTemperature();
     int getHumidity();
-    int getBrightness();
-    float getCo2();
 
     void printAll();
 
     private:
 
-    MKRIoTCarrier &carrier;
-
-    int temperature;
-    int humidity;
-    int brightness;
-    float co2;
-    SmoothingFilter brightnessFilter;
+    float temperature;
+    float humidity;
     int soilDrynessValues[NUM_SOIL_SENSORS];
+    Adafruit_SHT31 sht31;
 
     void normalizeSoilDryness(int &soilDryness, int sensorIndex);
 };
