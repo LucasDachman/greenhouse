@@ -3,21 +3,17 @@
 
 // Pin definitions for the greenhouse project
 
-#define FAN_1 9
-#define MISTER 10
-#define PUMP_1 7
-#define PUMP_2 13
-#define SENSOR_POWER 0
-#define MUX_OUTPUT A0
+#define FAN_1 5
+#define MISTER 4
+#define PUMP_1 3
+#define PUMP_2 2
+#define SENSOR_POWER 1
 
 #define SETUP_LED 4
 #define BTN_1 6
 
-
 #define NUM_SOIL_SENSORS 5
 
-const byte MUX_SELECT_PINS[3] = {3, 4, 5}; // S0, S1, S2
-const byte SOIL_SENSOR_MUX_PINS[NUM_SOIL_SENSORS] = {0, 1, 2, 3, 4}; // Y0, Y1, Y2, Y3, Y4
-
+const byte SOIL_SENSOR_PINS[NUM_SOIL_SENSORS] = {A1, A2, A3, A4, A5};
 
 #endif // PIN_DEFS_H

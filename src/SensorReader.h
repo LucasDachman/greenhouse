@@ -40,6 +40,7 @@ class SensorReader
     void updateSoilDryness();
     void updateTemperature();
     void updateHumidity();
+    void updateTempAndHumid();
     void updateAll();
 
     void getSoilDryness(int values[NUM_SOIL_SENSORS]);
@@ -48,6 +49,8 @@ class SensorReader
     int getHumidity();
 
     void printAll();
+
+    void heaterBurst();
 
     private:
 

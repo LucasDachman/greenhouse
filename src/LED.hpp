@@ -4,9 +4,10 @@
 #include <WiFiNINA.h>
 #include <utility/wifi_drv.h>
 
-#define INT_LED_GREEN 25
-#define INT_LED_RED 26
+#define INT_LED_RED 25
+#define INT_LED_GREEN 26
 #define INT_LED_BLUE 27
+#define LED_MAX 25
 
 class InternalLed {
   public:
@@ -17,11 +18,14 @@ class InternalLed {
     WiFiDrv::pinMode(INT_LED_BLUE, OUTPUT);
   }
 
-  static inline void led(int red, int green, int blue)
+  static inline void led(int r, int g, int b)
   {
-    WiFiDrv::analogWrite(INT_LED_GREEN, green); //GREEN
-    WiFiDrv::analogWrite(INT_LED_RED, red);   //RED
-    WiFiDrv::analogWrite(INT_LED_BLUE, blue);   //BLUE
+    r = map(r, 0, 255, 0, LED_MAX);
+    g = map(g, 0, 255, 0, LED_MAX);
+    b = map(b, 0, 255, 0, LED_MAX);
+    WiFiDrv::analogWrite(INT_LED_RED, r);
+    WiFiDrv::analogWrite(INT_LED_GREEN, g);
+    WiFiDrv::analogWrite(INT_LED_BLUE, b);
   }
 
   static inline void white()

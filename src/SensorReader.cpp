@@ -1,37 +1,25 @@
 #include "SensorReader.h"
-
-// The selectMuxPin function sets the S0, S1, and S2 pins
-// accordingly, given a pin from 0-7.
-void selectMuxPin(byte pin)
-{
-  for (int i = 0; i < 3; i++)
-  {
-    if (pin & (1 << i))
-      digitalWrite(MUX_SELECT_PINS[i], HIGH);
-    else
-      digitalWrite(MUX_SELECT_PINS[i], LOW);
-  }
-}
+#include "LED.hpp"
 
 SensorReader::SensorReader()
     : temperature(-1),
       humidity(-1),
-      soilDrynessValues{0, 0, 0, 0, 0},
+      soilDrynessValues{-1, -1, -1, -1, -1},
       sht31()
 {
 }
 
 void SensorReader::setup()
 {
-  pinMode(MUX_OUTPUT, INPUT);
   pinMode(SENSOR_POWER, OUTPUT);
-  for (byte i = 0; i < 3; i++)
+  for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    pinMode(MUX_SELECT_PINS[i], OUTPUT);
+    pinMode(SOIL_SENSOR_PINS[i], INPUT);
   }
   if (!sht31.begin(0x44))
   {
     Serial.println("Couldn't find SHT31");
+    InternalLed::red();
     while (1)
       delay(1);
   }
@@ -41,17 +29,14 @@ void SensorReader::updateSoilDryness()
 {
   // SENSOR_POWER is connected to a high-side switch
   digitalWrite(SENSOR_POWER, LOW);
+  delay(1000); // Allow time for the sensor to stabilize
   for (byte i = 0; i < NUM_SOIL_SENSORS; i++)
   {
-    byte muxPin = SOIL_SENSOR_MUX_PINS[i];
-    selectMuxPin(muxPin);
-    delay(1000); // Allow time for the sensor to stabilize
-    soilDrynessValues[i] = analogRead(MUX_OUTPUT);
     // Take 10 samples and average them
     SmoothingFilter filter(10);
     for (int j = 0; j < 10; j++)
     {
-      filter.addSample(analogRead(MUX_OUTPUT));
+      filter.addSample(analogRead(SOIL_SENSOR_PINS[i]));
       delay(50);
     }
     soilDrynessValues[i] = filter.getSmoothedValue();
@@ -73,7 +58,7 @@ void SensorReader::updateTemperature()
     Serial.println("Failed to read temperature");
     return;
   }
-  temperature = 9 / 5 * temp_c + 32; // Convert to Fahrenheit
+  temperature = 9.0 / 5.0 * temp_c + 32.0; // Convert to Fahrenheit
 }
 
 void SensorReader::updateHumidity()
@@ -88,11 +73,25 @@ void SensorReader::updateHumidity()
   humidity = hum;
 }
 
+void SensorReader::updateTempAndHumid()
+{
+  float temp_c, hum;
+  bool success = sht31.readBoth(&temp_c, &hum);
+  if (!success || isnan(temp_c) || isnan(hum))
+  {
+    temperature = -1;
+    humidity = -1;
+    Serial.println("Failed to read temperature and humidity");
+    return;
+  }
+  temperature = 9.0 / 5.0 * temp_c + 32.0; // Convert to Fahrenheit
+  humidity = hum;
+}
+
 void SensorReader::updateAll()
 {
   updateSoilDryness();
-  updateTemperature();
-  updateHumidity();
+  updateTempAndHumid();
 }
 
 void SensorReader::getSoilDryness(int values[NUM_SOIL_SENSORS])
@@ -137,6 +136,13 @@ void SensorReader::printAll()
     Serial.print(": ");
     Serial.println(soilDrynessValues[i]);
   }
+}
+
+void SensorReader::heaterBurst()
+{
+  sht31.heater(true);
+  delay(200);
+  sht31.heater(false);
 }
 
 void SensorReader::normalizeSoilDryness(int &soilDryness, int sensorIndex)

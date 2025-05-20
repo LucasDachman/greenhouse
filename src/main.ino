@@ -66,6 +66,8 @@ void onShutdown()
 bool sendData(void *)
 {
   Serial.println("sendData");
+  sensors.heaterBurst();
+  delay(1000);
   sensors.updateAll();
 
   JsonDocument doc;
@@ -120,9 +122,12 @@ bool checkBtn()
   if (digitalRead(BTN_1) == LOW)
   {
     Serial.println("Button pressed!");
-    pump_1.start();
-    delay(3000);
-    pump_1.stop();
+    // pump_1.start();
+    // delay(3000);
+    // pump_1.stop();
+    sensors.updateAll();
+    sensors.printAll();
+    sendData();
   }
 }
 
@@ -195,22 +200,20 @@ bool reconnectWiFi(void *)
 
 void setup()
 {
+  InternalLed::setup();
+  InternalLed::white();
+
   // Debug console
   Serial.begin(115200);
   while (!Serial && millis() < 5000)
   {
     // Wait for Serial Monitor to connect (max 5 seconds)
   }
-  delay(2000);
-
-  // Internal LED pins
-  InternalLed::setup();
 
   Serial.println("Starting watchdog...");
   watchdog.attachShutdown(onShutdown);
   watchdog.setup(WDT_SOFTCYCLE4M);
 
-  InternalLed::white();
   if (!ECCX08.begin())
   {
     Serial.println("No ECCX08 present!");
