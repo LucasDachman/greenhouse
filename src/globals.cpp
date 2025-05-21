@@ -1,6 +1,9 @@
 #include "globals.h"
+#include "arduino_secrets.h"
+#include "MqttEventHandlerLed.hpp"
 
 WiFiClient wifiClient;
 BearSSLClient sslClient(wifiClient);
-AwsIotMqttClient awsIotMqttClient(sslClient);
+MqttEventHandlerLed *mqttEventHandler;
+AwsIotMqttClient awsIotMqttClient(awsIotEndpoint, sslClient, mqttEventHandler);
 Logger logger(Serial, awsIotMqttClient);

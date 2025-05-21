@@ -1,12 +1,12 @@
 #ifndef PUMPSTRATEGY_H
 #define PUMPSTRATEGY_H
 
-#include "ActuatorStrategy.h"
-#include "Actuator.h"
+#include <ActuatorStrategy.h>
+#include <Actuator.hpp>
 #include <Arduino.h>
 #include "targets.h"
 #include "Logger.h"
-#include "LogHelpers.hpp"
+#include "helpers/LogHelpers.hpp"
 #include "globals.h"
 
 struct PumpStrategyParams

@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "arduino_secrets.h"
 #include "AwsIotMqttClient.h"
 
 class LogParamsBuilder;
@@ -16,7 +15,7 @@ public:
     bool serial = false;
     bool notification = false;
     bool cloud = false;
-    const char *topic = "greenhouse/logs/mkrwifi1010";
+    const char *topic = nullptr;
     JsonDocument doc;
   };
 

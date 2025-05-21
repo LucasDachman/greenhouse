@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include "LogHelpers.hpp"
+#include "helpers/LogHelpers.hpp"
 #include "targets.h"
-#include "Actuator.h"
-#include "ActuatorStrategy.h"
-#include "Actuator.h"
+#include <ActuatorStrategy.h>
+#include <Actuator.hpp>
 #include "globals.h"
 
 class FanStrategy : public ActuatorStrategy<int>

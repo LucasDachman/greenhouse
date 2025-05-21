@@ -11,12 +11,12 @@
 #include <ArduinoJson.h>
 #include <arduino-timer.h>
 #include <WDTZero.h>
-#include "LogHelpers.hpp"
-#include "Actuator.h"
-#include "FanStrategy.hpp"
-#include "MisterStrategy.hpp"
-#include "PumpStrategy.hpp"
-#include "LED.hpp"
+#include "helpers/LogHelpers.hpp"
+#include <Actuator.hpp>
+#include "strategies/FanStrategy.hpp"
+#include "strategies/MisterStrategy.hpp"
+#include "strategies/PumpStrategy.hpp"
+#include "helpers/LedHelpers.hpp"
 
 // WiFi credentials.
 char ssid[] = WIFI_SSID;
@@ -117,7 +117,7 @@ bool fanIfNeeded(void *)
   return true;
 }
 
-bool checkBtn()
+void checkBtn()
 {
   if (digitalRead(BTN_1) == LOW)
   {

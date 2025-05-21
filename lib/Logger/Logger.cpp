@@ -1,14 +1,10 @@
 #include "Logger.h"
 #include <Arduino.h>
-#include "arduino_secrets.h"
-#include "pin_defs.h"
 #include <HardwareSerial.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include <cstdarg>
 #include <time.h>
-
-int freeMemory();
 
 Logger::Logger(Stream &stream, AwsIotMqttClient &awsIotMqttClient) : stream(&stream), mqttClient(&awsIotMqttClient) {}
 
@@ -35,9 +31,6 @@ void Logger::log(const LogParams &params)
 
     // Serial.print("data: ");
     // Serial.println(data);
-
-    Serial.print("Free memory: ");
-    Serial.println(freeMemory());
 
     JsonDocument doc;
     doc["t"] = timeString;

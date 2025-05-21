@@ -1,15 +1,16 @@
 #include "AwsIotMqttClient.h"
-#include "LED.hpp"
-#include "pin_defs.h"
 
-int freeMemory();
-
-AwsIotMqttClient::AwsIotMqttClient(BearSSLClient &sslClient) : mqttClient(sslClient)
+AwsIotMqttClient::AwsIotMqttClient(const char *awsEndpoint, BearSSLClient &sslClient, MqttEventHandler *eventHandler)
+    : awsEndpoint(awsEndpoint), mqttClient(sslClient), eventHandler(eventHandler)
 {
 }
 
 bool AwsIotMqttClient::connect()
 {
+  if (eventHandler)
+  {
+    eventHandler->onConnectStart();
+  }
   if (!ECCX08.begin())
   {
     Serial.println("No ECCX08 present!");
@@ -20,12 +21,14 @@ bool AwsIotMqttClient::connect()
   // Connect to AWS IoT Core
   while (!mqttClient.connected())
   {
-    Serial.print("Free memory: ");
-    Serial.println(freeMemory());
     Serial.println("Connecting to AWS IoT Core...");
-    if (mqttClient.connect(awsIotEndpoint, awsPort))
+    if (mqttClient.connect(awsEndpoint, awsPort))
     {
       Serial.println("Connected to AWS IoT Core");
+      if (eventHandler)
+      {
+        eventHandler->afterConnect(true);
+      }
       return true;
     }
     else
@@ -40,12 +43,12 @@ bool AwsIotMqttClient::connect()
 
 bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
 {
-  InternalLed::orange();
   Serial.println("Publishing log data to AWS IoT Core");
   if (!mqttClient.connected())
   {
     Serial.println("MQTT client not connected. Reconnecting...");
-    if (connect()) {
+    if (connect())
+    {
       Serial.println("Reconnected to AWS IoT Core");
     }
     else
@@ -61,14 +64,20 @@ bool AwsIotMqttClient::publish(const char *data, const char *topic = awsTopic)
   if (result)
   {
     Serial.println("Log data published successfully");
-    InternalLed::green();
+    if (eventHandler)
+    {
+      eventHandler->afterPublish(topic, true);
+    }
     return true;
   }
   else
   {
     Serial.print("Failed to publish log data. Code: ");
     Serial.println(result);
-    InternalLed::red();
+    if (eventHandler)
+    {
+      eventHandler->afterPublish(topic, false);
+    }
     return false;
   }
 }

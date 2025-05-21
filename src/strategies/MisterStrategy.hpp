@@ -2,11 +2,11 @@
 #define MISTERSTRATEGY_H
 
 #include "ActuatorStrategy.h"
-#include "Actuator.h"
+#include <Actuator.hpp>
 #include <Arduino.h>
+#include <Logger.h>
 #include "targets.h"
-#include "Logger.h"
-#include "LogHelpers.hpp"
+#include "helpers/LogHelpers.hpp"
 #include "globals.h"
 
 class MisterStrategy : public ActuatorStrategy<int>
