@@ -54,6 +54,12 @@ The watering strategy is mostly based around the fact that there are 6 plants an
 
 The fan and mister are controlled by the SHT3X sensor. Each is enabled or disabled according to a hysteresis. i.e., if the temperature is above a certain threshold, the fan is turned on. If the temperature is below a certain threshold, the fan is turned off. The same applies to the mister, but with humidity instead of temperature.
 
+### Data Uploading
+
+The data is sent to AWS IoT core as JSON at a certain interval using MQTT. The data includes the temperature, humidity, and soil moisture readings from each sensor. The data is sent in a single message to reduce the number of messages sent to AWS IoT core.
+
+In addition, alerts are triggered when pumps are activated.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
