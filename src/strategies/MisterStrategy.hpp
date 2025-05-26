@@ -20,7 +20,6 @@ public:
             mister.start();
             logger.build()
                 .serial(true)
-                .notification(true)
                 .topic("greenhouse/data/actions")
                 .data(misterLogDoc(1, humidity))
                 .log();
@@ -30,7 +29,6 @@ public:
             mister.stop();
             logger.build()
                 .serial(true)
-                .notification(true)
                 .topic("greenhouse/data/actions")
                 .data(misterLogDoc(0, humidity))
                 .log();
