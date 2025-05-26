@@ -19,8 +19,8 @@ static const char *SOIL_KEYS[NUM_SOIL_SENSORS] = {
 // Percentage threshold for soil dryness
 // This is the value where we start watering
 static const int SOIL_THRESHOLDS[NUM_SOIL_SENSORS] = {
-    75,  // Sensor 0
-    70,  // Sensor 1
+    59,  // Sensor 0
+    69,  // Sensor 1
     42,  // Sensor 2
     100,  // Sensor 3
     100   // Sensor 4
