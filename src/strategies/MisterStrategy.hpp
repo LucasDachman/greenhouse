@@ -15,7 +15,7 @@ public:
 
     void execute(int &humidity, Actuator<int> &mister) override
     {
-        if (!mister.isOn() && humidity < MIST_AT)
+        if (!mister.isOn() && humidity < MIST_LOW_BOUND)
         {
             mister.start();
             logger.build()
@@ -24,7 +24,7 @@ public:
                 .data(misterLogDoc(1, humidity))
                 .log();
         }
-        else if (mister.isOn() && humidity > MIST_AT)
+        else if (mister.isOn() && humidity > MIST_HIGH_BOUND)
         {
             mister.stop();
             logger.build()
