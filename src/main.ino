@@ -97,7 +97,7 @@ bool waterIfNeeded(void *)
   sensors.updateSoilDryness();
   PumpStrategyParams params;
   sensors.getSoilDryness(params.values);
-  params.start = 2;
+  params.start = 1;
   params.end = 3;
   pump_1.respondTo(params);
   return true;
