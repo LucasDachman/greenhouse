@@ -17,7 +17,7 @@ public:
       fan.start();
       logger.build()
           .serial(true)
-          .notification(true)
+          .cloud(true)
           .topic("greenhouse/data/actions")
           .data(fanLogDoc(1, temp))
           .log();
@@ -27,7 +27,7 @@ public:
       fan.stop();
       logger.build()
           .serial(true)
-          .notification(true)
+          .cloud(true)
           .topic("greenhouse/data/actions")
           .data(fanLogDoc(0, temp))
           .log();

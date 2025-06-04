@@ -1,8 +1,8 @@
 #ifndef TARGETS_H
 #define TARGETS_H
 
-#define WATER_SOIL_AT 75
-#define MIST_AT 40
+#define MIST_HIGH_BOUND 55
+#define MIST_LOW_BOUND 45
 
 #define TEMP_LOW_BOUND 72
 #define TEMP_HIGH_BOUND 74

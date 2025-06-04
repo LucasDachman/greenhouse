@@ -26,15 +26,15 @@ public:
   void execute(PumpStrategyParams &value, Actuator<PumpStrategyParams> &pump) override
   {
 
-    bool shouldStart = false;
+    bool shouldStart = true;
     for (size_t i = value.start; i < value.end; i++)
     {
       int soilDryness = value.values[i];
       int threshold = SOIL_THRESHOLDS[i];
 
-      if (soilDryness > threshold)
+      if (soilDryness < threshold)
       {
-        shouldStart = true;
+        shouldStart = false;
         break;
       }
     }

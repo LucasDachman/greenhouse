@@ -112,6 +112,12 @@ bool humidifyIfNeeded(void *)
 
 bool fanIfNeeded(void *)
 {
+  // if (mister.isOn()) {
+  //   if (fan.isOn()) {
+  //     fan.stop();
+  //   }
+  //   return true;
+  // }
   sensors.updateTemperature();
   fan.respondTo(sensors.getTemperature());
   return true;
