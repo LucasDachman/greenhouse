@@ -127,13 +127,19 @@ void checkBtn()
 {
   if (digitalRead(BTN_1) == LOW)
   {
-    Serial.println("Button pressed!");
-    // pump_1.start();
-    // delay(3000);
-    // pump_1.stop();
-    sensors.updateAll();
-    sensors.printAll();
-    sendData();
+    delay(500);
+    if (digitalRead(BTN_1) == LOW)
+    {
+      Serial.println("Button held down!");
+      pump_1.start();
+      delay(3000);
+      pump_1.stop();
+    } else {
+      Serial.println("Button pressed!");
+      sensors.updateAll();
+      sensors.printAll();
+      sendData();
+    }
   }
 }
 
