@@ -20,8 +20,8 @@ static const char *SOIL_KEYS[NUM_SOIL_SENSORS] = {
 // This is the value where we start watering
 static const int SOIL_THRESHOLDS[NUM_SOIL_SENSORS] = {
     59,  // Sensor 0
-    69,  // Sensor 1
-    42,  // Sensor 2
+    36,  // Sensor 1
+    68,  // Sensor 2
     100,  // Sensor 3
     100   // Sensor 4
 };

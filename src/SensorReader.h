@@ -14,7 +14,7 @@
 const int SOIL_UB[NUM_SOIL_SENSORS] = {
     687,  // Sensor 0
     689,  // Sensor 1
-    700,  // Sensor 2
+    701,  // Sensor 2
     1023,  // Sensor 3
     1023   // Sensor 4
 };
@@ -24,7 +24,7 @@ const int SOIL_UB[NUM_SOIL_SENSORS] = {
 const int SOIL_LB[NUM_SOIL_SENSORS] = {
     293,  // Sensor 0
     296,  // Sensor 1
-    305,  // Sensor 2
+    300,  // Sensor 2
     0, // Sensor 3
     0 // Sensor 4
 };
