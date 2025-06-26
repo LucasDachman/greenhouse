@@ -34,7 +34,7 @@ This is a smart greenhouse project that uses an Arduino MKR WiFi 1010 to monitor
 
 ## Wiring
 
-The circuit features a 5V power supply which directly powers the Arduino, the sensors, and the actuators. The Arduino controls 4 low-side MOSFETs to switch the pumps, fan, and mister on and off. The SHT3X sensor is connected to the Arduino via I2C. The soil moisture sensors are powered conditionally via a high-side MOSFET, which is controlled by the Arduino. Additionally, a push button is included to manually send data to AWS IoT core.
+The circuit features a 5V power supply which directly powers the Arduino, the sensors, and the actuators. The Arduino controls 4 low-side MOSFETs to switch the pumps, fan, and mister on and off. The SHT3X sensor is connected to the Arduino via I2C. The soil moisture sensors are powered conditionally via a high-side MOSFET, which is controlled by the Arduino. Additionally, a push button is included for manual actions.
 
 ![Wiring Diagram](./doc/assets/schematic.png)
 
